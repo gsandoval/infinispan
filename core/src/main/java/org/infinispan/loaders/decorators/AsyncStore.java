@@ -8,6 +8,7 @@ import org.infinispan.configuration.cache.CacheLoaderConfiguration;
 import org.infinispan.configuration.cache.CacheStoreConfiguration;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.loaders.CacheLoaderConfig;
 import org.infinispan.loaders.CacheLoaderException;
 import org.infinispan.loaders.modifications.Clear;
 import org.infinispan.loaders.modifications.Modification;
@@ -78,6 +79,7 @@ public class AsyncStore extends AbstractDelegatingStore {
    private long shutdownTimeout;
    private String cacheName;
    private TimeService timeService;
+   private String nodeName;
 
    private BufferLock stateLock;
    @GuardedBy("stateLock")
@@ -103,6 +105,8 @@ public class AsyncStore extends AbstractDelegatingStore {
       long cacheStopTimeout = cacheCfg != null ? cacheCfg.transaction().cacheStopTimeout() : 30000;
       Long configuredAsyncStopTimeout = this.asyncConfiguration.shutdownTimeout();
       cacheName = cache != null ? cache.getName() : null;
+      nodeName = cache != null ? cache.getCacheManager().getCacheManagerConfiguration().transport()
+            .nodeName() : null;
 
       // Async store shutdown timeout cannot be bigger than
       // the overall cache stop timeout, so limit it accordingly.
@@ -293,16 +297,17 @@ public class AsyncStore extends AbstractDelegatingStore {
       super.start();
 
       int poolSize = asyncConfiguration.threadPoolSize();
+      final String nodeNameSuffix = nodeName != null ? "," + nodeName : "";
       executor = new ThreadPoolExecutor(0, poolSize, 120L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
             new ThreadFactory() {
                @Override
                public Thread newThread(Runnable r) {
-                  Thread t = new Thread(r, "AsyncStoreProcessor-" + cacheName + "-" + threadId.getAndIncrement());
+                  Thread t = new Thread(r, "AsyncStoreProcessor-" + cacheName + threadId.getAndIncrement() + nodeNameSuffix);
                   t.setDaemon(true);
                   return t;
                }
             });
-      coordinator = new Thread(new AsyncStoreCoordinator(), "AsyncStoreCoordinator-" + cacheName);
+      coordinator = new Thread(new AsyncStoreCoordinator(), "AsyncStoreCoordinator-" + cacheName + nodeNameSuffix);
       coordinator.setDaemon(true);
       coordinator.start();
    }
