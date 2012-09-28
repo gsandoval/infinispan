@@ -94,7 +94,7 @@ public abstract class RehashTestBase extends BaseDistFunctionalTest {
       final CountDownLatch l = new CountDownLatch(1);
       final AtomicBoolean rollback = new AtomicBoolean(false);
 
-      Thread th = new Thread("Updater") {
+      Thread th = getTestThreadFactory("Updater").newThread(new Runnable() {
          @Override
          public void run() {
             try {
@@ -121,7 +121,7 @@ public abstract class RehashTestBase extends BaseDistFunctionalTest {
                throw new RuntimeException(e);
             }
          }
-      };
+      });
 
       th.start();
 

@@ -90,7 +90,7 @@ public class DynamicTopologyStressTest extends MultipleCacheManagersTest {
             writingNode.getCache(), writingNode.getCache(), INDEX_NAME).create();
       SharedState sharedIndexState = IndexReadingStressTest.fillDirectory(masterDirectory, INITIAL_INDEX_TERMS);
 
-      ExecutorService executor = Executors.newFixedThreadPool(READERS + 1);
+      ExecutorService executor = Executors.newFixedThreadPool(READERS + 1, getTestThreadFactory("ConstantReadingThread"));
       try {
          executor.execute(new ConstantWritingThread(masterDirectory, sharedIndexState));
          for (int i=0; i<READERS; i++) {

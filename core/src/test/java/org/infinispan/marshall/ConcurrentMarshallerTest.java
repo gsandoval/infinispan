@@ -42,15 +42,7 @@ public class ConcurrentMarshallerTest extends MultipleCacheManagersTest {
       int nbWriters = 10;
       final CyclicBarrier barrier = new CyclicBarrier(nbWriters + 1);
       List<Future<Void>> futures = new ArrayList<Future<Void>>(nbWriters);
-      ExecutorService exec = Executors.newCachedThreadPool(new ThreadFactory() {
-         volatile int i = 0;
-
-         @Override
-         public Thread newThread(Runnable r) {
-            int ii = i++;
-            return new Thread(r, "ConcurrentMarshallerTester-" + ii);
-         }
-      });
+      ExecutorService exec = Executors.newCachedThreadPool(getThreadFactory("ConcurrentMarshallerTester"));
 
       try {
          for (int i = 0; i < nbWriters; i++) {

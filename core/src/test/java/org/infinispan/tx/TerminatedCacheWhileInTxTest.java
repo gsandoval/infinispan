@@ -55,7 +55,7 @@ public class TerminatedCacheWhileInTxTest extends SingleCacheManagerTest {
 
    private void stopCacheCalls(final Method m, boolean withCallStoppingCache) throws Throwable {
       final Cache<String, String> cache = cacheManager.getCache("cache-" + m.getName());
-      final ExecutorService executorService = Executors.newCachedThreadPool();
+      final ExecutorService executorService = Executors.newCachedThreadPool(getThreadFactory());
       final CyclicBarrier barrier = new CyclicBarrier(2);
       final CountDownLatch latch = new CountDownLatch(1);
       final TransactionManager tm = TestingUtil.getTransactionManager(cache);

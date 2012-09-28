@@ -51,7 +51,7 @@ public class ConcurrentNotificationTest extends AbstractInfinispanTest {
       final CountDownLatch latch = new CountDownLatch(1);
 
       for (int i = 0; i < workers.length; i++) {
-         workers[i] = new Thread() {
+         workers[i] = new Thread("Notification-" + i + "," + getClass().getSimpleName()) {
             @Override
             public void run() {
                try {

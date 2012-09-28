@@ -6,6 +6,7 @@ import org.apache.lucene.store.Directory;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.loaders.jdbc.configuration.JdbcStringBasedCacheStoreConfigurationBuilder;
 import org.infinispan.lucene.DirectoryIntegrityCheck;
+import org.infinispan.lucene.InfinispanDirectory;
 import org.infinispan.lucene.LuceneKey2StringMapper;
 import org.infinispan.lucene.directory.DirectoryBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -50,8 +51,8 @@ public class CacheStoreStressTest extends SingleCacheManagerTest {
    public void stressTestOnStore() throws InterruptedException, IOException {
       cache = cacheManager.getCache();
       assert cache!=null;
-      Directory dir = DirectoryBuilder.newDirectoryInstance(cache, cache, cache, indexName).create();
-      PerformanceCompareStressTest.stressTestDirectory(dir, "InfinispanClusteredWith-Store");
+      InfinispanDirectory dir = new InfinispanDirectory(cache, indexName);
+      PerformanceCompareStressTest.stressTestDirectory(dir, "InfinispanClusteredWith-Store", getTestThreadFactory("LuceneReaderThread"));
       DirectoryIntegrityCheck.verifyDirectoryStructure(cache, indexName, true);
    }
 

@@ -22,6 +22,7 @@ import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.remoting.rpc.RpcOptions;
 import org.infinispan.remoting.rpc.RpcOptionsBuilder;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.topology.CacheTopology;
 import org.infinispan.transaction.LocalTransaction;
@@ -90,12 +91,7 @@ public class StateProviderTest {
             .locking().lockAcquisitionTimeout(200).writeSkewCheck(true).isolationLevel(IsolationLevel.REPEATABLE_READ);
       configuration = cb.build();
 
-      ThreadFactory threadFactory = new ThreadFactory() {
-         @Override
-         public Thread newThread(Runnable r) {
-            return new Thread(r);
-         }
-      };
+      ThreadFactory threadFactory = getTestThreadFactory();
 
       pooledExecutorService = new ThreadPoolExecutor(10, 20, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingDeque<Runnable>(), threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());

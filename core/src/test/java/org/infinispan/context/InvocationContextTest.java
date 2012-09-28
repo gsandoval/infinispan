@@ -77,7 +77,7 @@ public class InvocationContextTest extends MultipleCacheManagersTest {
       Transaction tx = tm.suspend();
       final List<Throwable> throwables = new LinkedList<Throwable>();
 
-      Thread th = new Thread() {
+      Thread th = fork(new Runnable() {
          public void run() {
             try {
                cache.put("k", "v3");
@@ -85,9 +85,8 @@ public class InvocationContextTest extends MultipleCacheManagersTest {
                throwables.add(th);
             }
          }
-      };
+      });
 
-      th.start();
       // th will now block trying to acquire the lock.
       th.interrupt();
       th.join();
@@ -110,7 +109,7 @@ public class InvocationContextTest extends MultipleCacheManagersTest {
       cache.addListener(dl);
       final List<Throwable> throwables = new LinkedList<Throwable>();
 
-      Thread th = new Thread() {
+      Thread th = fork(new Runnable() {
          public void run() {
             try {
                cache.put("k", "v3");
@@ -118,9 +117,8 @@ public class InvocationContextTest extends MultipleCacheManagersTest {
                throwables.add(th);
             }
          }
-      };
+      });
 
-      th.start();
       // wait for th to acquire the lock
       lockAquiredSignal.await();
 

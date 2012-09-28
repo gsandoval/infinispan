@@ -74,13 +74,12 @@ public class ConcurrentLoadAndEvictTest extends SingleCacheManagerTest {
       assert se.getValue().equals("b");
 
       // now attempt a concurrent get and evict.
-      ExecutorService e = Executors.newFixedThreadPool(1);
       sdi.enabled = true;
 
       log.info("test::doing the get");
 
       // call the get
-      Future<String> future = e.submit(new Callable<String>() {
+      Future<String> future = fork(new Callable<String>() {
          @Override
          public String call() throws Exception {
             return (String) cache.get("a");
@@ -100,8 +99,6 @@ public class ConcurrentLoadAndEvictTest extends SingleCacheManagerTest {
 
       // and check that the key actually has been evicted
       assert !TestingUtil.extractComponent(cache, DataContainer.class).containsKey("a");
-
-      e.shutdownNow();
    }
 
    public static class SlowDownInterceptor extends CommandInterceptor implements CloneableConfigurationComponent{

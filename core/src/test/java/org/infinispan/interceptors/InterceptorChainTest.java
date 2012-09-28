@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import org.infinispan.factories.components.ComponentMetadataRepo;
 import org.infinispan.factories.components.ModuleMetadataFileFinder;
 import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.Test;
@@ -24,7 +25,7 @@ import org.testng.annotations.Test;
  * @since 5.1
  */
 @Test(groups = "functional", testName = "interceptors.InterceptorChainTest")
-public class InterceptorChainTest {
+public class InterceptorChainTest extends AbstractInfinispanTest {
 
    private static final Log log = LogFactory.getLog(InterceptorChainTest.class);
 
@@ -36,7 +37,7 @@ public class InterceptorChainTest {
       ic.addInterceptor(new ActivationInterceptor(), 1);
       CyclicBarrier barrier = new CyclicBarrier(4);
       List<Future<Void>> futures = new ArrayList<Future<Void>>(2);
-      ExecutorService executorService = Executors.newFixedThreadPool(3);
+      ExecutorService executorService = Executors.newFixedThreadPool(3, getTestThreadFactory("InterceptorChainUpdater"));
       try {
          // We do test concurrent add/remove of different types per thread,
          // so that the final result is predictable (testable) and that we

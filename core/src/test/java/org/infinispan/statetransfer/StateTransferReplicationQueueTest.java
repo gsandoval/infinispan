@@ -129,7 +129,7 @@ public class StateTransferReplicationQueueTest extends MultipleCacheManagersTest
       private TransactionManager tm;
 
       WritingThread(Cache<Object, Object> cache, boolean tx) {
-         super("WriterThread");
+         super("WriterThread," + cache.getCacheManager().getCacheManagerConfiguration().transport().nodeName());
          this.cache = cache;
          this.tx = tx;
          if (tx) tm = TestingUtil.getTransactionManager(cache);

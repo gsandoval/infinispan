@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadFactory;
 
 import static org.junit.Assert.assertEquals;
 
@@ -203,21 +204,17 @@ public class StateTransferFunctionalTest extends MultipleCacheManagersTest {
       final JoiningNode node3 = new JoiningNode(createCacheManager());
       final JoiningNode node4 = new JoiningNode(createCacheManager());
 
-      Thread t1 = new Thread(new Runnable() {
+      Thread t1 = fork(new Runnable() {
          public void run() {
             node3.getCache(cacheName);
          }
       });
-      t1.setName("CacheStarter-Cache3");
-      t1.start();
 
-      Thread t2 = new Thread(new Runnable() {
+      Thread t2 = fork(new Runnable() {
          public void run() {
             node4.getCache(cacheName);
          }
       });
-      t2.setName("CacheStarter-Cache4");
-      t2.start();
 
       t1.join();
       t2.join();

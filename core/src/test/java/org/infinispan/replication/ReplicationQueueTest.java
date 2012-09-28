@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
@@ -203,9 +204,10 @@ public class ReplicationQueueTest extends MultipleCacheManagersTest {
       Thread[] threads = new Thread[numThreads];
       final CountDownLatch latch = new CountDownLatch(1);
 
+      ThreadFactory threadFactory = getTestThreadFactory();
       for (int i = 0; i < numThreads; i++) {
          final int i1 = i;
-         threads[i] = new Thread() {
+         threads[i] = threadFactory.newThread(new Runnable() {
             int index = i1;
 
             public void run() {
@@ -219,7 +221,7 @@ public class ReplicationQueueTest extends MultipleCacheManagersTest {
                   cache1.put("key" + index + "_" + j, "value");
                }
             }
-         };
+         });
          threads[i].start();
       }
       latch.countDown();

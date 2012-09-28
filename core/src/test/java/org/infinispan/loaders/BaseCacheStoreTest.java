@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheLoaderConfiguration;
@@ -377,14 +378,13 @@ public abstract class BaseCacheStoreTest extends AbstractInfinispanTest {
       final GlobalTransaction tx = gtf.newGlobalTransaction(null, false);
       cs.prepare(mods, tx, false);
 
-      Thread t = new Thread(new Runnable() {
+      Thread t = fork(new Runnable() {
          @Override
          public void run() {
             cs.rollback(tx);
          }
       });
 
-      t.start();
       t.join();
 
       assertFalse(cs.containsKey("k1"));
@@ -399,14 +399,13 @@ public abstract class BaseCacheStoreTest extends AbstractInfinispanTest {
 
       cs.prepare(mods, tx, false);
 
-      Thread t2 = new Thread(new Runnable() {
+      Thread t2 = fork(new Runnable() {
          @Override
          public void run() {
             cs.rollback(tx);
          }
       });
 
-      t2.start();
       t2.join();
       assertFalse(cs.containsKey("k1"));
       assertFalse(cs.containsKey("k2"));
@@ -669,10 +668,10 @@ public abstract class BaseCacheStoreTest extends AbstractInfinispanTest {
          }
       };
 
+      ThreadFactory threadFactory = getTestThreadFactory();
       Thread[] threads = new Thread[numThreads];
-
       for (int i = 0; i < numThreads; i++) {
-         threads[i] = new Thread(getClass().getSimpleName() + "-" + i) {
+         threads[i] = threadFactory.newThread(new Runnable() {
             @Override
             public void run() {
                for (int i = 0; i < loops; i++) {
@@ -681,7 +680,7 @@ public abstract class BaseCacheStoreTest extends AbstractInfinispanTest {
                   get.run();
                }
             }
-         };
+         });
       }
 
       for (Thread t : threads) t.start();

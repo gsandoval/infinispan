@@ -494,7 +494,7 @@ public class FineGrainedAtomicMapAPITest extends MultipleCacheManagersTest {
 
       final FineGrainedAtomicMap<String, String> map2 = AtomicMapLookup.getFineGrainedAtomicMap(cache2, "testConcurrentTx", false);
       assert map2.size() == 1 && map1.size() == 1;
-      Thread t1 = new Thread( new Runnable() {
+      Thread t1 = fork( new Runnable() {
 
          @Override
          public void run() {
@@ -506,10 +506,10 @@ public class FineGrainedAtomicMapAPITest extends MultipleCacheManagersTest {
             catch (Exception e) {
                log.error(e);
             } 
-         }});
-      t1.start();
+         }
+      });
 
-      Thread t2 = new Thread(new Runnable(){
+      Thread t2 = fork(new Runnable(){
 
          @Override
          public void run() {
@@ -521,8 +521,8 @@ public class FineGrainedAtomicMapAPITest extends MultipleCacheManagersTest {
             catch (Exception e) {
                log.error(e);
             }
-         }});
-      t2.start();
+         }
+      });
 
       t2.join();
       t1.join();

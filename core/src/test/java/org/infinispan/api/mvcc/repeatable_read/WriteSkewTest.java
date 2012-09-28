@@ -127,7 +127,7 @@ public class WriteSkewTest extends AbstractInfinispanTest {
       final CountDownLatch latch2 = new CountDownLatch(1);
       final CountDownLatch latch3 = new CountDownLatch(1);
 
-      Thread t1 = new Thread(new Runnable() {
+      Thread t1 = fork(new Runnable() {
          public void run() {
             try {
                latch1.await();
@@ -163,9 +163,9 @@ public class WriteSkewTest extends AbstractInfinispanTest {
                ex.printStackTrace();
             }
          }
-      }, "Thread-1, WriteSkewTest");
+      }, false);
 
-      Thread t2 = new Thread(new Runnable() {
+      Thread t2 = fork(new Runnable() {
          public void run() {
             try {
                latch2.await();
@@ -200,10 +200,8 @@ public class WriteSkewTest extends AbstractInfinispanTest {
                ex.printStackTrace();
             }
          }
-      }, "Thread-2, WriteSkewTest");
+      }, false);
 
-      t1.start();
-      t2.start();
       latch1.countDown();
       t1.join();
       t2.join();
@@ -374,14 +372,7 @@ public class WriteSkewTest extends AbstractInfinispanTest {
       int nbWriters = 10;
       CyclicBarrier barrier = new CyclicBarrier(nbWriters + 1);
       List<Future<Void>> futures = new ArrayList<Future<Void>>(nbWriters);
-      ExecutorService executorService = Executors.newCachedThreadPool(new ThreadFactory() {
-         volatile int i = 0;
-         @Override
-         public Thread newThread(Runnable r) {
-            int ii = i++;
-            return new Thread(r, "EntryWriter-" + ii + ", WriteSkewTest");
-         }
-      });
+      ExecutorService executorService = Executors.newCachedThreadPool(getTestThreadFactory("EntryWriter"));
 
       try {
          for (int i = 0; i < nbWriters; i++) {
@@ -410,7 +401,7 @@ public class WriteSkewTest extends AbstractInfinispanTest {
 
       cache.put(key, "v");
 
-      Thread w1 = new Thread("Writer-1, WriteSkewTest") {
+      Thread w1 = fork(new Runnable() {
          @Override
          public void run() {
             boolean didCoundDown = false;
@@ -430,9 +421,9 @@ public class WriteSkewTest extends AbstractInfinispanTest {
                if (!didCoundDown) threadSignal.countDown();
             }
          }
-      };
+      }, false);
 
-      Thread w2 = new Thread("Writer-2, WriteSkewTest") {
+      Thread w2 = fork(new Runnable() {
          @Override
          public void run() {
             boolean didCoundDown = false;
@@ -461,10 +452,7 @@ public class WriteSkewTest extends AbstractInfinispanTest {
                if (!didCoundDown) threadSignal.countDown();
             }
          }
-      };
-
-      w1.start();
-      w2.start();
+      }, false);
 
       threadSignal.await();
       // now.  both txs have read.

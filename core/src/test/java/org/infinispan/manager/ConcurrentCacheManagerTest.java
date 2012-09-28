@@ -46,7 +46,7 @@ public class ConcurrentCacheManagerTest extends AbstractCacheTest {
    public void testConcurrentGetCacheCalls() throws Exception {
       final CyclicBarrier barrier = new CyclicBarrier(NUM_THREADS + 1);
       List<Future<Void>> futures = new ArrayList<Future<Void>>(NUM_THREADS);
-      ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS, getTestThreadFactory("Worker"));
+      ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS, getTestThreadFactory());
       for (int i = 0; i < NUM_THREADS; i++) {
          log.debug("Schedule execution");
          final String name = "cache" + (i % NUM_CACHES);

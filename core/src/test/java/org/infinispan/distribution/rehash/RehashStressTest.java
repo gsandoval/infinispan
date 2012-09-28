@@ -68,7 +68,8 @@ public class RehashStressTest extends AbstractInfinispanTest {
 
 
 
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(TEST_THREADS);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(TEST_THREADS,
+              getTestThreadFactory("SimulateTask"));
         executor.prestartAllCoreThreads();
         for (int i = 0; i < TEST_LOOPS; i++) {
             executor.submit(new SimulateTask());

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.store.Directory;
@@ -15,6 +16,7 @@ import org.infinispan.lucene.DirectoryIntegrityCheck;
 import org.infinispan.lucene.directory.DirectoryBuilder;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.transaction.TransactionMode;
@@ -38,7 +40,7 @@ import org.testng.annotations.Test;
  */
 @SuppressWarnings("unchecked")
 @Test(groups = "profiling", testName = "lucene.profiling.PerformanceCompareStressTest", sequential = true)
-public class PerformanceCompareStressTest {
+public class PerformanceCompareStressTest extends AbstractInfinispanTest {
 
    /**
     * The number of terms in the dictionary used as source of terms by the IndexWriter to produce
@@ -112,11 +114,17 @@ public class PerformanceCompareStressTest {
       }
    }
 
-   @Test(enabled=false)//to prevent invocations from some versions of TestNG
-   public static void stressTestDirectory(Directory dir, String testLabel) throws InterruptedException, IOException {
+   @Test(enabled=false)
+   protected void stressTestDirectory(Directory dir, String testLabel) throws IOException, InterruptedException {
+      stressTestDirectory(dir, testLabel, getTestThreadFactory("LuceneReaderThread"));
+   }
+
+   @Test(enabled=false)
+   protected static void stressTestDirectory(Directory dir, String testLabel, ThreadFactory threadFactory)
+         throws InterruptedException, IOException {
       SharedState state = new SharedState(DICTIONARY_SIZE);
       CacheTestSupport.initializeDirectory(dir);
-      ExecutorService e = Executors.newFixedThreadPool(READER_THREADS + WRITER_THREADS);
+      ExecutorService e = Executors.newFixedThreadPool(READER_THREADS + WRITER_THREADS, threadFactory);
       for (int i = 0; i < READER_THREADS; i++) {
          e.execute(new LuceneReaderThread(dir, state));
       }

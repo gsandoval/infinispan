@@ -77,7 +77,6 @@ public class SingleOwnerAndAsyncMethodsWithTxTest extends BaseDistFunctionalTest
 
       final CountDownLatch getAsynclatch = new CountDownLatch(1);
       final CountDownLatch putLatch = new CountDownLatch(1);
-      ExecutorService exec = Executors.newCachedThreadPool();
       Callable<Void> c1 = new Callable<Void>() {
          @Override
          public Void call() throws Exception {
@@ -125,8 +124,8 @@ public class SingleOwnerAndAsyncMethodsWithTxTest extends BaseDistFunctionalTest
          }
       };
 
-      Future f1 = exec.submit(c1);
-      Future f2 = exec.submit(c2);
+      Future f1 = fork(c1);
+      Future f2 = fork(c2);
 
       f1.get();
       try {

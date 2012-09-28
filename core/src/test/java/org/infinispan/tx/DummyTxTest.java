@@ -14,6 +14,7 @@ import org.testng.annotations.Test;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.testng.AssertJUnit.assertEquals;
@@ -64,9 +65,10 @@ public class DummyTxTest extends SingleCacheManagerTest {
       final AtomicInteger didNothing = new AtomicInteger();
 
       final CountDownLatch latch = new CountDownLatch(1);
+      ThreadFactory threadFactory = getTestThreadFactory("Remover");
       Thread[] threads = new Thread[numThreads];
       for (int i = 0; i < numThreads; i++) {
-         threads[i] = new Thread("DummyTxTest.Remover-" + i) {
+         threads[i] = threadFactory.newThread(new Runnable() {
             public void run() {
                try {
                   latch.await();
@@ -108,7 +110,7 @@ public class DummyTxTest extends SingleCacheManagerTest {
                   log.error(e);
                }
             }
-         };
+         });
          threads[i].start();
       }
 

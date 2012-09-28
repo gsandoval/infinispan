@@ -27,7 +27,7 @@ public class FlagsReplicationTest extends BaseDistFunctionalTest {
    static final String TEST_NAME = "replication.FlagsReplicationTest";
    static final String DATA_PROVIDER = TEST_NAME + ".dataprovider";
    private ExecutorService threadPool;
-   
+
    private final Integer one = 1;
    private final String key = TEST_NAME;
    
@@ -130,12 +130,11 @@ public class FlagsReplicationTest extends BaseDistFunctionalTest {
          }
       }
    }
-   
    @BeforeClass
    protected void startThreadPool() {
-      threadPool = Executors.newFixedThreadPool(1);
+      threadPool = Executors.newFixedThreadPool(1, getTestThreadFactory("Worker"));
    }
-   
+
    @AfterClass
    protected void stopThreadPool() {
       threadPool.shutdownNow();

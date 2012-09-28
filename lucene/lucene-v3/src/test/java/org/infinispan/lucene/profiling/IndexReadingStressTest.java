@@ -28,6 +28,7 @@ import org.infinispan.lucene.directory.DirectoryBuilder;
 import org.infinispan.lucene.testutils.ClusteredCacheFactory;
 import org.infinispan.lucene.testutils.LuceneSettings;
 import org.infinispan.manager.CacheContainer;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.transaction.TransactionMode;
 import org.testng.annotations.AfterClass;
@@ -45,7 +46,7 @@ import org.testng.annotations.Test;
  * @since 4.0
  */
 @Test(groups = "profiling", testName = "lucene.profiling.IndexReadingStressTest", sequential = true)
-public class IndexReadingStressTest {
+public class IndexReadingStressTest extends AbstractInfinispanTest {
 
    /** Concurrent IndexSearchers used during tests */
    private static final int THREADS = 5;
@@ -98,7 +99,7 @@ public class IndexReadingStressTest {
 
    private void testDirectory(Directory dir, String testLabel) throws InterruptedException, IOException {
       SharedState state = fillDirectory(dir, TERMS_NUMBER);
-      ExecutorService e = Executors.newFixedThreadPool(THREADS);
+      ExecutorService e = Executors.newFixedThreadPool(THREADS, getTestThreadFactory("IndependentLuceneReader"));
       for (int i = 0; i < THREADS; i++) {
          e.execute(new IndependentLuceneReaderThread(dir, state, i, 1, TERMS_NUMBER));
       }

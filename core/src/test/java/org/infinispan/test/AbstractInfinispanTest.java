@@ -65,6 +65,10 @@ public class AbstractInfinispanTest {
       }
    }
 
+   protected Thread fork(Runnable r) {
+      return fork(r, false);
+   }
+
    protected Thread fork(Runnable r, boolean waitForCompletion) {
       final String name = "ForkThread-" + spawnedThreadsCounter.incrementAndGet() + "," + getClass().getSimpleName();
       log.tracef("About to start thread '%s' as child of thread '%s'", name, Thread.currentThread().getName());
@@ -100,6 +104,10 @@ public class AbstractInfinispanTest {
       spawnedThreads.add(t);
       t.start();
       return future;
+   }
+
+   protected ThreadFactory getTestThreadFactory() {
+      return getTestThreadFactory("Worker");
    }
 
    protected ThreadFactory getTestThreadFactory(final String prefix) {

@@ -129,7 +129,7 @@ public class SyncReplLockingTest extends MultipleCacheManagersTest {
       assertNull("Should be null", cache2.get(k));
       final CountDownLatch latch = new CountDownLatch(1);
 
-      Thread t = new Thread() {
+      Thread t = getTestThreadFactory().newThread(new Runnable() {
          @Override
          public void run() {
             log.info("Concurrent " + (useTx ? "tx" : "non-tx") + " write started "
@@ -161,7 +161,7 @@ public class SyncReplLockingTest extends MultipleCacheManagersTest {
                latch.countDown();
             }
          }
-      };
+      });
 
       String name = "Infinispan";
       TransactionManager mgr = TestingUtil.getTransactionManager(cache1);

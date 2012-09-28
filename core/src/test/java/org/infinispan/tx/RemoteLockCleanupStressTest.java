@@ -40,11 +40,8 @@ public class RemoteLockCleanupStressTest extends MultipleCacheManagersTest {
 
    public void testLockRelease() {
 
-      Thread t1 = new Thread(new CounterTask(cm1));
-      Thread t2 = new Thread(new CounterTask(cm2));
-
-      t1.start();
-      t2.start();
+      Thread t1 = fork(new CounterTask(cm1));
+      Thread t2 = fork(new CounterTask(cm2));
 
       sleepThread(1000);
       t2.interrupt();

@@ -48,7 +48,7 @@ import static org.infinispan.test.TestingUtil.replaceField;
 @CleanupAfterMethod
 public class OngoingTransactionsAndJoinTest extends MultipleCacheManagersTest {
    ConfigurationBuilder configuration;
-   ScheduledExecutorService delayedExecutor = Executors.newScheduledThreadPool(1);
+   ScheduledExecutorService delayedExecutor = Executors.newScheduledThreadPool(1, getTestThreadFactory());
 
    @Override
    protected void createCacheManagers() throws Throwable {
@@ -84,9 +84,9 @@ public class OngoingTransactionsAndJoinTest extends MultipleCacheManagersTest {
 
 
       Set<Thread> threads = new HashSet<Thread>();
-      threads.add(new Thread(ut, "Worker-UnpreparedDuringRehashTask"));
-      threads.add(new Thread(pt, "Worker-PrepareDuringRehashTask"));
-      threads.add(new Thread(ct, "Worker-CommitDuringRehashTask"));
+      threads.add(getThreadFactory("Worker-UnpreparedDuringRehashTask").newThread(ut));
+      threads.add(getThreadFactory("Worker-PrepareDuringRehashTask").newThread(pt));
+      threads.add(getThreadFactory("Worker-CommitDuringRehashTask").newThread(ct));
 
       for (Thread t : threads) t.start();
 

@@ -74,6 +74,9 @@ public class UnitTestTestNGListener implements ITestListener, IInvokedMethodList
       log.error(message, arg0.getThrowable());
       failed.incrementAndGet();
       printStatus();
+      String testName = arg0.getTestClass().getRealClass().getSimpleName();
+      log.tracef("Dumping all threads for test %s.", testName);
+      dumpThreads(testName);
    }
 
    synchronized public void onTestSkipped(ITestResult arg0) {
@@ -128,19 +131,29 @@ public class UnitTestTestNGListener implements ITestListener, IInvokedMethodList
          String message = String.format("Configuration method %s threw an exception", getTestDesc(testResult));
          System.out.println(message);
          log.error(message, testResult.getThrowable());
+         dumpThreads(testResult.getTestClass().getName());
       }
    }
 
    //todo [anistor] this approach can result in more OOM. maybe it's wiser to remove the whole thing and rely on -XX:+HeapDumpOnOutOfMemoryError
    private void printAllTheThreadsInTheJvm() {
+      log.tracef("Dumping all threads in the JVM.");
+      dumpThreads("");
+   }
+
+   private void dumpThreads(String testName) {
       if (log.isTraceEnabled()) {
          Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
-         log.tracef("Dumping all %s threads in the system.", allStackTraces.size());
          for (Map.Entry<Thread, StackTraceElement[]> s : allStackTraces.entrySet()) {
+            String threadName = s.getKey().getName();
+            if (!threadName.contains(testName)) {
+               continue;
+            }
+
             StringBuilder sb = new StringBuilder();
-            sb.append("Thread: ").append(s.getKey().getName()).append(", Stack trace:\n");
+            sb.append("Thread ").append(threadName).append(":\n");
             for (StackTraceElement ste: s.getValue()) {
-               sb.append("      ").append(ste.toString()).append("\n");
+               sb.append("\tat ").append(ste.toString()).append("\n");
             }
             log.trace(sb.toString());
          }

@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadFactory;
 
 @Test(groups = "functional", singleThreaded = true, testName = "api.mvcc.LockPerEntryTest")
 public class LockPerEntryTest extends SingleCacheManagerTest {
@@ -39,9 +40,10 @@ public class LockPerEntryTest extends SingleCacheManagerTest {
       final int numLoops = 1000;
       final List<Exception> exceptions = new LinkedList<Exception>();
 
+      ThreadFactory threadFactory = getTestThreadFactory();
       Thread[] t = new Thread[NUM_THREADS];
       for (int i = 0; i < NUM_THREADS; i++)
-         t[i] = new Thread() {
+         t[i] = threadFactory.newThread(new Runnable() {
             @Override
             public void run() {
                try {
@@ -66,7 +68,7 @@ public class LockPerEntryTest extends SingleCacheManagerTest {
                   }
                }
             }
-         };
+         });
 
       for (Thread th : t) th.start();
       l.countDown();

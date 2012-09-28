@@ -1,5 +1,7 @@
 package org.infinispan.api.batch;
 
+import java.util.concurrent.ExecutionException;
+
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -84,7 +86,7 @@ public class BatchWithoutTMTest extends AbstractBatchTest {
 
    private static final Log log = LogFactory.getLog(BatchWithoutTMTest.class);
 
-   public void testBatchVisibility() throws InterruptedException {
+   public void testBatchVisibility() throws InterruptedException, ExecutionException {
       Cache<String, String> cache = null;
       cache = createCache(true, "testBatchVisibility");
 

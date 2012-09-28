@@ -79,7 +79,7 @@ public class StaleLocksWithCommitDuringStateTransferTest extends MultipleCacheMa
       txCoordinator.prepare(localTx);
 
       final CountDownLatch commitLatch = new CountDownLatch(1);
-      Thread worker = new Thread("RehasherSim,StaleLocksWithCommitDuringStateTransferTest") {
+      Thread worker = fork(new Runnable() {
          @Override
          public void run() {
             try {
@@ -103,8 +103,7 @@ public class StaleLocksWithCommitDuringStateTransferTest extends MultipleCacheMa
                log.errorf(t, "Error blocking/unblocking transactions");
             }
          }
-      };
-      worker.start();
+      });
 
       commitLatch.await(10, TimeUnit.SECONDS);
 
@@ -170,7 +169,7 @@ public class StaleLocksWithCommitDuringStateTransferTest extends MultipleCacheMa
       }, StateTransferInterceptor.class);
 
       // Schedule the remote node to stop on another thread since the main thread will be busy with the commit call
-      Thread worker = new Thread("RehasherSim,StaleLocksWithCommitDuringStateTransferTest") {
+      Thread worker = fork(new Runnable() {
          @Override
          public void run() {
             try {
@@ -182,8 +181,7 @@ public class StaleLocksWithCommitDuringStateTransferTest extends MultipleCacheMa
                log.errorf(e, "Error stopping cache");
             }
          }
-      };
-      worker.start();
+      });
 
       try {
          // finally commit or rollback the transaction

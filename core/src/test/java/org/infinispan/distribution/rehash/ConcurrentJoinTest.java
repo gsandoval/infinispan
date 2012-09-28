@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadFactory;
 
 @Test(groups = "functional", testName = "distribution.rehash.ConcurrentJoinTest", description = "See ISPN-1123")
 public class ConcurrentJoinTest extends RehashTestBase {
@@ -31,16 +32,17 @@ public class ConcurrentJoinTest extends RehashTestBase {
          joiners.set(i, null);
       }
 
+      ThreadFactory threadFactory = getTestThreadFactory();
       Thread[] threads = new Thread[NUM_JOINERS];
       for (int i = 0; i < NUM_JOINERS; i++) {
          final int ii = i;
-         threads[i] = new Thread(new Runnable() {
+         threads[i] = threadFactory.newThread(new Runnable() {
             public void run() {
                EmbeddedCacheManager joinerManager = joinerManagers.get(ii);
                Cache<Object, String> joiner = joinerManager.getCache(cacheName);
                joiners.set(ii, joiner);
             }
-         }, "ConcurrentJoinTest-Worker-" + i);
+         });
       }
 
       for (int i = 0; i < NUM_JOINERS; i++) {

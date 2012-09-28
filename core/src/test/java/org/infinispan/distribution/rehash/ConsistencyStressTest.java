@@ -83,14 +83,7 @@ public class ConsistencyStressTest extends MultipleCacheManagersTest {
 
    public void testConsistency() throws Throwable, InterruptedException {
       // create an executor...
-      ExecutorService executorService = Executors.newFixedThreadPool(NUM_NODES * WORKERS_PER_NODE, new ThreadFactory() {
-         int i = 0;
-
-         @Override
-         public synchronized Thread newThread(Runnable r) {
-            return new Thread(r, "Worker-" + i++);
-         }
-      });
+      ExecutorService executorService = Executors.newFixedThreadPool(NUM_NODES * WORKERS_PER_NODE, getTestThreadFactory());
       Set<Future<Void>> futures = new HashSet<Future<Void>>(NUM_NODES * WORKERS_PER_NODE);
       Set<String> keysToIgnore = new HashSet<String>();
 

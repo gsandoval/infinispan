@@ -38,6 +38,7 @@ public class IllegalMonitorTest extends BaseDistFunctionalTest {
    @Test(threadPoolSize = 7, invocationCount = 21)
    public void testScenario() throws InterruptedException {
       int myId = sequencer.incrementAndGet();
+      Thread.currentThread().setName("testng-" + getClass().getSimpleName() + "-" + myId);
       AdvancedCache cache = this.caches.get(myId % this.INIT_CLUSTER_SIZE).getAdvancedCache();
       for (int i = 0; i < 100; i++) {
          if (i % 4 == 0)

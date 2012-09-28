@@ -2,6 +2,7 @@ package org.infinispan.stress;
 
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.container.*;
+import org.infinispan.test.AbstractInfinispanTest;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.Test;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Test(testName = "stress.DataContainerStressTest", groups = "stress", enabled = false,
       description = "Disabled by default, designed to be run manually.")
-public class DataContainerStressTest {
+public class DataContainerStressTest extends AbstractInfinispanTest {
    volatile CountDownLatch latch;
    final int RUN_TIME_MILLIS = 45 * 1000; // 1 min
    final int WARMUP_TIME_MILLIS = 10 * 1000; // 10 sec
@@ -49,7 +50,7 @@ public class DataContainerStressTest {
       final AtomicBoolean run = new AtomicBoolean(true);
       final int actual_num_loops = warmup ? warmup_num_loops : num_loops;
 
-      Thread getter = new Thread() {
+      Thread getter = fork(new Runnable() {
          public void run() {
             waitForStart();
             long start = System.nanoTime();
@@ -62,9 +63,9 @@ public class DataContainerStressTest {
             }
             perf.put("GET", opsPerMS(System.nanoTime() - start, runs));
          }
-      };
+      });
 
-      Thread putter = new Thread() {
+      Thread putter = fork(new Runnable() {
          public void run() {
             waitForStart();
             long start = System.nanoTime();
@@ -77,9 +78,9 @@ public class DataContainerStressTest {
             }
             perf.put("PUT", opsPerMS(System.nanoTime() - start, runs));
          }
-      };
+      });
 
-      Thread remover = new Thread() {
+      Thread remover = fork(new Runnable() {
          public void run() {
             waitForStart();
             long start = System.nanoTime();
@@ -92,10 +93,9 @@ public class DataContainerStressTest {
             }
             perf.put("REM", opsPerMS(System.nanoTime() - start, runs));
          }
-      };
+      });
 
       Thread[] threads = {getter, putter, remover};
-      for (Thread t : threads) t.start();
       latch.countDown();
 
       // wait some time

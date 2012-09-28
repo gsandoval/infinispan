@@ -89,12 +89,11 @@ public class APITest extends MultipleCacheManagersTest {
    public void testSilentLockFailureAffectsPostOperations() throws Exception {
       final Cache<Integer, String> cache = cache(0);
       final TransactionManager tm = cache.getAdvancedCache().getTransactionManager();
-      final ExecutorService e = Executors.newCachedThreadPool();
       final CountDownLatch waitLatch = new CountDownLatch(1);
       final CountDownLatch continueLatch = new CountDownLatch(1);
       cache.put(1, "v1");
 
-      Future<Void> f1 = e.submit(new Callable<Void>() {
+      Future<Void> f1 = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
             tm.begin();
@@ -114,7 +113,7 @@ public class APITest extends MultipleCacheManagersTest {
       });
 
 
-      Future<Void> f2 = e.submit(new Callable<Void>() {
+      Future<Void> f2 = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
             waitLatch.await();
