@@ -676,6 +676,14 @@ public class TestingUtil {
             runningCaches.add(registryCache);
          }
          for (Cache cache : runningCaches) {
+            Address a = cacheContainer.getAddress();
+            String str;
+            if (a == null)
+               str = "a non-clustered cache manager";
+            else
+               str = "a cache manager at address " + a;
+            log.debugf("Cleaning data for cache '%s' on %s", cache.getName(), str);
+
             clearReplicationQueues(cache);
             clearCacheLoader(cache);
             removeInMemoryData(cache);
@@ -734,14 +742,6 @@ public class TestingUtil {
    }
 
    private static void removeInMemoryData(Cache cache) {
-      EmbeddedCacheManager mgr = cache.getCacheManager();
-      Address a = mgr.getAddress();
-      String str;
-      if (a == null)
-         str = "a non-clustered cache manager";
-      else
-         str = "a cache manager at address " + a;
-      log.debugf("Cleaning data for cache '%s' on %s", cache.getName(), str);
       DataContainer dataContainer = TestingUtil.extractComponent(cache, DataContainer.class);
       if (log.isDebugEnabled()) log.debugf("removeInMemoryData(): dataContainerBefore == %s", dataContainer.entrySet());
       dataContainer.clear();

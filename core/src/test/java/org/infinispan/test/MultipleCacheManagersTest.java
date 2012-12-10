@@ -97,6 +97,12 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
          log.debug("*** Test method complete; clearing contents on all caches.");
          if (cacheManagers.isEmpty())
             throw new IllegalStateException("No caches registered! Use registerCacheManager(Cache... caches) to do that!");
+
+         // A running clustered get command could have read an entry from the cache loader just before
+         // we cleared it. Sleep for a bit to allow it to write the entry to the data container before
+         // we clear the data container as well.
+         TestingUtil.sleepThread(1000);
+
          TestingUtil.clearContent(cacheManagers);
       } else {
          TestingUtil.killCacheManagers(cacheManagers);
