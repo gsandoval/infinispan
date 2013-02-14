@@ -96,7 +96,7 @@ public class MarshalledValueTest extends MultipleCacheManagersTest {
 
    @Override
    @AfterClass
-   protected void destroy() {
+   protected void destroy() throws InterruptedException {
       super.destroy();
    }
 

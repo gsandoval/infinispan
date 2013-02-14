@@ -40,7 +40,7 @@ public class DatagridManager extends MultipleCacheManagersTest
 {
 
    @Override
-   public void destroy() {
+   public void destroy() throws InterruptedException {
       TestingUtil.killCacheManagers(cacheManagers);
       cacheManagers.clear();
       listeners.clear();

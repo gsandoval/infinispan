@@ -80,7 +80,7 @@ public abstract class MultipleCacheManagersTest extends AbstractCacheTest {
    }
 
    @AfterClass(alwaysRun = true)
-   protected void destroy() {
+   protected void destroy() throws InterruptedException {
       if (cleanupAfterTest()) TestingUtil.killCacheManagers(cacheManagers);
       cacheManagers.clear();
       listeners.clear();

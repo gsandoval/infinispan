@@ -7,6 +7,7 @@ import org.infinispan.util.logging.LogFactory;
 import org.testng.annotations.AfterTest;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * AbstractInfinispanTest is a superclass of all Infinispan tests.
@@ -34,10 +36,19 @@ public class AbstractInfinispanTest {
    public static final TimeService TIME_SERVICE = new DefaultTimeService();
 
    @AfterTest(alwaysRun = true)
-   protected void killSpawnedThreads() {
+   protected void killSpawnedThreads() throws InterruptedException {
       for (Thread t : spawnedThreads) {
-         if (t.isAlive())
+         if (t.isAlive()) {
             t.interrupt();
+         }
+
+         t.join(1000);
+         if (t.isAlive()) {
+            Map<Thread,StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+            Exception e = new Exception();
+            e.setStackTrace(allStackTraces.get(t));
+            log.errorf("Failed to stop forked thread %s", t, e);
+         }
       }
    }
 
