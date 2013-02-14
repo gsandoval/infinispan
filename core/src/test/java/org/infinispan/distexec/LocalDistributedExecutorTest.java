@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.testng.Assert.fail;
+
 /**
  * Test for verifying that the DistributedExecutors also work on the Local Cache.
  * 
@@ -52,6 +54,7 @@ public class LocalDistributedExecutorTest extends MultipleCacheManagersTest {
    public void shutDownDistributedExecutorService() {
       if (cleanupService != null) {
          cleanupService.shutdownNow();
+         cleanupService = null;
       } else {
          log.warn("Should have shutdown DistributedExecutorService but none was set");
       }
@@ -85,6 +88,9 @@ public class LocalDistributedExecutorTest extends MultipleCacheManagersTest {
    
    protected DistributedExecutorService createDES(Cache<?,?> cache){
       DistributedExecutorService des = new DefaultExecutorService(cache);
+      if (cleanupService != null) {
+         fail("Can only start one DistributedExecutorService per test method");
+      }
       cleanupService = des;
       return des;
    }

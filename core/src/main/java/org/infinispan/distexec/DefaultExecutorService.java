@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -136,8 +137,14 @@ public class DefaultExecutorService extends AbstractExecutorService implements D
     * @param masterCacheNode
     *           Cache node initiating distributed task
     */
-   public DefaultExecutorService(Cache<?, ?> masterCacheNode) {
-      this(masterCacheNode, Executors.newSingleThreadExecutor(), true);
+   public DefaultExecutorService(final Cache<?, ?> masterCacheNode) {
+      this(masterCacheNode, Executors.newSingleThreadExecutor(new ThreadFactory() {
+         @Override
+         public Thread newThread(Runnable r) {
+            String name = "DistributedExecutorWorker-" + this.hashCode() + "," + masterCacheNode.toString();
+            return new Thread(r, name);
+         }
+      }), true);
    }
 
    /**
