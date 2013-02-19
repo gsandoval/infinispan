@@ -3,6 +3,10 @@ package org.infinispan.remoting.transport.jgroups;
 import net.jcip.annotations.GuardedBy;
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.ReplicableCommand;
+import org.infinispan.commands.read.GetKeyValueCommand;
+import org.infinispan.commands.remote.CacheRpcCommand;
+import org.infinispan.commands.remote.ClusteredGetCommand;
+import org.infinispan.commands.remote.SingleRpcCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.Util;
 import org.infinispan.context.Flag;
@@ -427,10 +431,18 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
             // These UNICASTs happen in parallel using sendMessageWithFuture.  Each future has a listener attached
             // (see FutureCollator) and the first successful response is used.
             FutureCollator futureCollator = new FutureCollator(filter, dests.size(), timeout, card.gcr.getTimeService());
+
+            // TODO: Make this a configuration option.
+            final int staggeringTimeout = 100;
+
+            // All together, if this is *not* a remote GET.
             for (Address a : dests) {
                NotifyingFuture<Object> f = card.sendMessageWithFuture(constructMessage(buf, a, mode, rsvp, deliverOrder), opts);
                futureCollator.watchFuture(f, a);
+               // ISPN-825 Stagger remote GETs.
+               if (command instanceof ClusteredGetCommand && futureCollator.waitForResponse(staggeringTimeout)) break;
             }
+
             retval = futureCollator.getResponseList();
          } else if (mode == ResponseMode.GET_ALL) {
             // A SYNC call that needs to go everywhere
@@ -510,9 +522,11 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
    }
 
    final static class FutureCollator implements FutureListener<Object> {
-      final RspFilter filter;
-      final Map<Future<Object>, SenderContainer> futures = new HashMap<>(4);
-      final long timeout;
+      private final RspFilter filter;
+      private final Map<Future<Object>, SenderContainer> futures;
+      private final long timeout;
+
+      // TODO - analyse whether we need all of these objects guarded by 'this'.  Can we make do with volatiles instead?  It will remove the synchronized methods as well.
       @GuardedBy("this")
       private RspList<Object> retval;
       @GuardedBy("this")
@@ -526,11 +540,38 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
          this.expectedResponses = expectedResponses;
          this.timeout = timeout;
          this.timeService = timeService;
+         this.futures = new HashMap<Future<Object>, SenderContainer>(expectedResponses);
       }
 
       public void watchFuture(NotifyingFuture<Object> f, Address address) {
          futures.put(f, new SenderContainer(address));
          f.setListener(this);
+      }
+
+      /**
+       * Blocks up up to timeToWaitMillis milliseconds for a (valid or invalid) response.  Will respond with <tt>true</tt>
+       * if the response is valid, or a <tt>false</tt> if the response is invalid or timed out.
+       *
+       * @param timeToWaitMillis
+       * @return true if the response waited for is valid, false if it isn't or if it times out.
+       */
+      public synchronized boolean waitForResponse(long timeToWaitMillis) throws Exception {
+         while (expectedResponses > 0 && retval == null) {
+            try {
+               this.wait(timeToWaitMillis);
+            } catch (InterruptedException e) {
+               // reset interruption flag
+               Thread.currentThread().interrupt();
+               expectedResponses = -1;
+            }
+         }
+         // Now we either have the response we need or aren't expecting any more responses - or have run out of time.
+         if (retval != null)
+            return true;
+         else if (exception != null)
+            throw exception;
+         else
+            return false;
       }
 
       public synchronized RspList<Object> getResponseList() throws Exception {
