@@ -3,6 +3,7 @@ package org.infinispan.factories;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.infinispan.CacheException;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.annotations.DefaultFactoryFor;
 import org.infinispan.factories.annotations.Inject;
@@ -19,7 +20,7 @@ import org.infinispan.factories.scopes.Scopes;
  * @since 5.2
  */
 @Scope(Scopes.GLOBAL)
-@DefaultFactoryFor(classes = TestDelayFactory.Component.class)
+@DefaultFactoryFor(classes = {TestDelayFactory.Component.class, TestDelayFactory.Component2.class})
 public class TestDelayFactory extends AbstractComponentFactory implements AutoInstantiableFactory {
    private boolean injectionDone = false;
    private Control control;
@@ -35,7 +36,11 @@ public class TestDelayFactory extends AbstractComponentFactory implements AutoIn
       if (!injectionDone) {
          throw new IllegalStateException("GlobalConfiguration reference is null");
       }
-      return componentType.cast(new Component());
+      try {
+         return componentType.newInstance();
+      } catch (Exception e) {
+         throw new CacheException(e);
+      }
    }
 
    @Scope(Scopes.NAMED_CACHE)
@@ -52,6 +57,21 @@ public class TestDelayFactory extends AbstractComponentFactory implements AutoIn
 
       public void unblock() {
          latch.countDown();
+      }
+   }
+
+   @Scope(Scopes.NAMED_CACHE)
+   public static class Component2 {
+      private boolean injectionDone = false;
+
+      @Inject
+      public void inject(Component c) throws InterruptedException {
+         Thread.sleep(1000);
+         injectionDone = true;
+      }
+
+      public boolean isInjectionDone() {
+         return injectionDone;
       }
    }
 }

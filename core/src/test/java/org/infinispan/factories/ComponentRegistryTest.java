@@ -19,6 +19,7 @@ import org.testng.annotations.Test;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Test the concurrent lookup of components for ISPN-2796.
@@ -61,9 +62,9 @@ public class ComponentRegistryTest extends AbstractInfinispanTest {
 
    public void testConcurrentLookupSameComponentRegistry() throws InterruptedException, ExecutionException {
 
-      Future<Object> future = fork(new Callable<Object>() {
+      Future<TestDelayFactory.Component> future = fork(new Callable<TestDelayFactory.Component>() {
          @Override
-         public Object call() throws Exception {
+         public TestDelayFactory.Component call() throws Exception {
             return cr1.getOrCreateComponent(TestDelayFactory.Component.class);
          }
       });
@@ -94,4 +95,32 @@ public class ComponentRegistryTest extends AbstractInfinispanTest {
       control.unblock();
       assertNotNull(future.get());
    }
+
+   public void testConcurrentLookupWithDependencies() throws InterruptedException, ExecutionException {
+
+      Future<TestDelayFactory.Component2> future = fork(new Callable<TestDelayFactory.Component2>() {
+         @Override
+         public TestDelayFactory.Component2 call() throws Exception {
+            return cr1.getOrCreateComponent(TestDelayFactory.Component2.class);
+         }
+      });
+
+      Thread.sleep(500);
+
+      // getComponent doesn't wait for the getOrCreateComponent call on the forked thread to finish
+      // It returns null instead, but that's ok because getComponent doesn't guarantee anything
+      while (!future.isDone()) {
+         TestDelayFactory.Component2 c = cr1.getComponent(TestDelayFactory.Component2.class);
+         assertTrue(c == null || c.isInjectionDone());
+         Thread.sleep(100);
+      }
+
+      TestDelayFactory.Component2 c = future.get();
+      assertTrue(c.isInjectionDone());
+
+      // now that getOrCreateComponent has finished, getComponent works as well
+      c = cr1.getComponent(TestDelayFactory.Component2.class);
+      assertTrue(c.isInjectionDone());
+   }
+
 }
