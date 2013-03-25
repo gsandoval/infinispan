@@ -42,14 +42,14 @@ public class ConcurrentStartupTest extends AbstractCacheTest {
       manager1 = TestCacheManagerFactory.createClusteredCacheManager(configurationBuilder);
       manager1.defineConfiguration("test", configurationBuilder.build());
       cache1 = manager1.getCache("test").getAdvancedCache();
-      ex1 = Executors.newSingleThreadExecutor(getThreadFactory("RndKeyGenerator"));
+      ex1 = Executors.newSingleThreadExecutor(getTestThreadFactory("RndKeyGenerator"));
       keyAffinityService1 = KeyAffinityServiceFactory.newLocalKeyAffinityService(cache1, new RndKeyGenerator(), ex1, KEY_QUEUE_SIZE);
       log.trace("Address for manager1: " + manager1.getAddress());
 
       manager2 = TestCacheManagerFactory.createClusteredCacheManager(configurationBuilder);
       manager2.defineConfiguration("test", configurationBuilder.build());
       cache2 = manager2.getCache("test").getAdvancedCache();
-      ex2 = Executors.newSingleThreadExecutor(getThreadFactory("RndKeyGenerator"));
+      ex2 = Executors.newSingleThreadExecutor(getTestThreadFactory("RndKeyGenerator"));
       keyAffinityService2 = KeyAffinityServiceFactory.newLocalKeyAffinityService(cache2, new RndKeyGenerator(), ex2, KEY_QUEUE_SIZE);
       log.trace("Address for manager2: " + manager2.getAddress());
 

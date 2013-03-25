@@ -103,7 +103,7 @@ public class DistributionRetryTest extends AbstractRetryTest {
    private Object generateKeyAndShutdownServer() throws IOException, ClassNotFoundException, InterruptedException {
       resetStats();
       Cache<Object,Object> cache = manager(1).getCache();
-      ExecutorService ex = Executors.newSingleThreadExecutor(getThreadFactory("ByteKeyGenerator"));
+      ExecutorService ex = Executors.newSingleThreadExecutor(getTestThreadFactory("ByteKeyGenerator"));
       KeyAffinityService kaf = KeyAffinityServiceFactory.newKeyAffinityService(cache, ex, new ByteKeyGenerator(), 2, true);
       Address address = cache.getAdvancedCache().getRpcManager().getTransport().getAddress();
       byte[] keyBytes = (byte[]) kaf.getKeyForAddress(address);

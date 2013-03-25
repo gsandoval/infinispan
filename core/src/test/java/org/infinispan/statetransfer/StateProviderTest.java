@@ -52,7 +52,7 @@ import static org.mockito.Mockito.*;
  * @since 5.2
  */
 @Test(groups = "functional", testName = "statetransfer.StateProviderTest")
-public class StateProviderTest {
+public class StateProviderTest extends AbstractInfinispanTest {
 
    private static final Log log = LogFactory.getLog(StateProviderTest.class);
    private static final TestAddress A = new TestAddress(0, "A");

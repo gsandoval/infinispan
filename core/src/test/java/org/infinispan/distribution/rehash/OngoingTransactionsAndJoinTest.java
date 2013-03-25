@@ -84,9 +84,9 @@ public class OngoingTransactionsAndJoinTest extends MultipleCacheManagersTest {
 
 
       Set<Thread> threads = new HashSet<Thread>();
-      threads.add(getThreadFactory("Worker-UnpreparedDuringRehashTask").newThread(ut));
-      threads.add(getThreadFactory("Worker-PrepareDuringRehashTask").newThread(pt));
-      threads.add(getThreadFactory("Worker-CommitDuringRehashTask").newThread(ct));
+      threads.add(getTestThreadFactory("Worker-UnpreparedDuringRehashTask").newThread(ut));
+      threads.add(getTestThreadFactory("Worker-PrepareDuringRehashTask").newThread(pt));
+      threads.add(getTestThreadFactory("Worker-CommitDuringRehashTask").newThread(ct));
 
       for (Thread t : threads) t.start();
 

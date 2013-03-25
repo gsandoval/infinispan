@@ -26,7 +26,7 @@ import static junit.framework.Assert.assertEquals;
  */
 public abstract class BaseKeyAffinityServiceTest extends BaseDistFunctionalTest {
 
-   protected ExecutorService executor  = Executors.newSingleThreadExecutor(getThreadFactory("KeyGeneratorThread"));
+   protected ExecutorService executor  = Executors.newSingleThreadExecutor(getTestThreadFactory("KeyGeneratorThread"));
    protected KeyAffinityServiceImpl<Object> keyAffinityService;
 
    @AfterTest
