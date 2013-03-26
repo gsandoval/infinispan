@@ -78,6 +78,7 @@ public class AsyncStore extends AbstractDelegatingStore {
    private long shutdownTimeout;
    private String cacheName;
    private TimeService timeService;
+   private String nodeName;
 
    private BufferLock stateLock;
    @GuardedBy("stateLock")
@@ -103,6 +104,8 @@ public class AsyncStore extends AbstractDelegatingStore {
       long cacheStopTimeout = cacheCfg != null ? cacheCfg.transaction().cacheStopTimeout() : 30000;
       Long configuredAsyncStopTimeout = this.asyncConfiguration.shutdownTimeout();
       cacheName = cache != null ? cache.getName() : null;
+      nodeName = cache != null ? cache.getCacheManager().getCacheManagerConfiguration().transport()
+            .nodeName() : null;
 
       // Async store shutdown timeout cannot be bigger than
       // the overall cache stop timeout, so limit it accordingly.
@@ -293,16 +296,22 @@ public class AsyncStore extends AbstractDelegatingStore {
       super.start();
 
       int poolSize = asyncConfiguration.threadPoolSize();
+      final String storeName = delegate.getClass().getSimpleName();
       executor = new ThreadPoolExecutor(0, poolSize, 120L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
             new ThreadFactory() {
                @Override
                public Thread newThread(Runnable r) {
-                  Thread t = new Thread(r, "AsyncStoreProcessor-" + cacheName + "-" + threadId.getAndIncrement());
+                  // Thread name: AsyncStoreProcessor-<storeName>-<ID>,<cacheName>,<nodeName>
+                  String threadName = "AsyncStoreProcessor-" + storeName + '-' + threadId.getAndIncrement()
+                        + ',' + cacheName + ',' + nodeName;
+                  Thread t = new Thread(r, threadName);
                   t.setDaemon(true);
                   return t;
                }
             });
-      coordinator = new Thread(new AsyncStoreCoordinator(), "AsyncStoreCoordinator-" + cacheName);
+      // Thread name: AsyncStoreCoordinator-<storeName>,<cacheName>,<nodeName>
+      final String threadName = "AsyncStoreCoordinator-" + storeName + ',' + cacheName + ',' + nodeName;
+      coordinator = new Thread(new AsyncStoreCoordinator(), threadName);
       coordinator.setDaemon(true);
       coordinator.start();
    }
