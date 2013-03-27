@@ -96,12 +96,13 @@ public class SingletonStore extends AbstractDelegatingStore {
       this.cacheManager = cache == null ? null : cache.getCacheManager();
       this.cache = cache;
 
-      final String nodeNameSuffix = cache == null ? "" : ','
-            + cacheManager.getCacheManagerConfiguration().transport().nodeName();
+      final String loaderName = delegate.getClass().getSimpleName();
+      final String cacheName = cache == null ? null : cache.getName();
+      final String nodeName = cache == null ? null : cache.getCacheManager().getCacheManagerConfiguration().transport().nodeName();
       executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
          @Override
          public Thread newThread(Runnable r) {
-            return new Thread(r, THREAD_NAME + nodeNameSuffix);
+            return new Thread(r, THREAD_NAME + '-' + loaderName + ',' + cacheName + ',' + nodeName);
          }
       });
 

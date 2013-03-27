@@ -63,15 +63,14 @@ public abstract class AbstractCacheStore extends AbstractCacheLoader implements 
          multiThreadedPurge = supportsMultiThreadedPurge() && config.getPurgerThreads() > 1;
          int nThreads = supportsMultiThreadedPurge() ? config.getPurgerThreads() : 1;
          String loaderName = getClass().getSimpleName();
-         String cacheNamePrefix = cache == null ? "" : cache.getName() + '-';
-         String nodeNameSuffix = cache == null ? "" : ',' + cache.getCacheManager().getCacheManagerConfiguration()
-               .transport().nodeName();
-         final String threadName = cacheNamePrefix + loaderName + '-' + THREAD_COUNTER.getAndIncrement()
-               + nodeNameSuffix;
+         String cacheName = cache == null ? null : cache.getName();
+         String nodeName = cache == null ? null : cache.getCacheManager().getCacheManagerConfiguration().transport().nodeName();
+         // Thread name: Purger-<loaderName>-<ID>,<cacheName>,<nodeName>
+         final String threadName = "Purger-" + loaderName + '-' + THREAD_COUNTER.getAndIncrement()
+               + ',' + cacheName + ',' + nodeName;
          purgerService = Executors.newFixedThreadPool(nThreads, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-               // Thread name: <cache>-<CacheStore>-<purger>-ID
                Thread t = new Thread(r, threadName);
                t.setDaemon(true);
                return t;

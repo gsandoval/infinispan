@@ -297,17 +297,22 @@ public class AsyncStore extends AbstractDelegatingStore {
       super.start();
 
       int poolSize = asyncConfiguration.threadPoolSize();
-      final String nodeNameSuffix = nodeName != null ? "," + nodeName : "";
+      final String storeName = delegate.getClass().getSimpleName();
       executor = new ThreadPoolExecutor(0, poolSize, 120L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
             new ThreadFactory() {
                @Override
                public Thread newThread(Runnable r) {
-                  Thread t = new Thread(r, "AsyncStoreProcessor-" + cacheName + threadId.getAndIncrement() + nodeNameSuffix);
+                  // Thread name: AsyncStoreProcessor-<storeName>-<ID>,<cacheName>,<nodeName>
+                  String threadName = "AsyncStoreProcessor-" + storeName + '-' + threadId.getAndIncrement()
+                        + ',' + cacheName + ',' + nodeName;
+                  Thread t = new Thread(r, threadName);
                   t.setDaemon(true);
                   return t;
                }
             });
-      coordinator = new Thread(new AsyncStoreCoordinator(), "AsyncStoreCoordinator-" + cacheName + nodeNameSuffix);
+      // Thread name: AsyncStoreCoordinator-<storeName>,<cacheName>,<nodeName>
+      final String threadName = "AsyncStoreCoordinator-" + storeName + ',' + cacheName + ',' + nodeName;
+      coordinator = new Thread(new AsyncStoreCoordinator(), threadName);
       coordinator.setDaemon(true);
       coordinator.start();
    }
