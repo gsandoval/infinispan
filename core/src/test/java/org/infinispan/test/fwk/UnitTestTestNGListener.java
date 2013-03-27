@@ -2,7 +2,13 @@ package org.infinispan.test.fwk;
 
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
-import org.testng.*;
+import org.testng.IClass;
+import org.testng.IConfigurationListener;
+import org.testng.ISuite;
+import org.testng.ISuiteListener;
+import org.testng.ITestContext;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
 
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -15,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author dpospisi@redhat.com
  * @author Mircea.Markus@jboss.com
  */
-public class UnitTestTestNGListener implements ITestListener, IInvokedMethodListener, ISuiteListener {
+public class UnitTestTestNGListener implements ITestListener, IConfigurationListener, ISuiteListener {
 
    /**
     * Holds test classes actually running in all threads.
@@ -37,7 +43,6 @@ public class UnitTestTestNGListener implements ITestListener, IInvokedMethodList
 
    public void onTestStart(ITestResult res) {
       log.info("Starting test " + getTestDesc(res));
-      addOomLoggingSupport();
       threadTestClass.set(res.getTestClass());
    }
 
@@ -74,9 +79,6 @@ public class UnitTestTestNGListener implements ITestListener, IInvokedMethodList
       log.error(message, arg0.getThrowable());
       failed.incrementAndGet();
       printStatus();
-      String testName = arg0.getTestClass().getRealClass().getSimpleName();
-      log.tracef("Dumping all threads for test %s.", testName);
-      dumpThreads(testName);
    }
 
    synchronized public void onTestSkipped(ITestResult arg0) {
@@ -104,7 +106,11 @@ public class UnitTestTestNGListener implements ITestListener, IInvokedMethodList
 
    public void onFinish(ITestContext arg0) {
       Class testClass = arg0.getCurrentXmlTest().getXmlClasses().get(0).getSupportClass();
-      TestCacheManagerFactory.testFinished(testClass.getSimpleName());
+      String testName = testClass.getSimpleName();
+      TestCacheManagerFactory.testFinished(testName);
+
+      log.tracef("Dumping all threads for test %s.", testName);
+      dumpThreads(testName);
    }
 
    private String getThreadId() {
@@ -122,17 +128,31 @@ public class UnitTestTestNGListener implements ITestListener, IInvokedMethodList
    }
 
    @Override
-   public void beforeInvocation(IInvokedMethod method, ITestResult testResult) {
+   public void onConfigurationSuccess(ITestResult itr) {
    }
 
    @Override
-   public void afterInvocation(IInvokedMethod method, ITestResult testResult) {
-      if (testResult.getThrowable() != null && method.isConfigurationMethod()) {
-         String message = String.format("Configuration method %s threw an exception", getTestDesc(testResult));
-         System.out.println(message);
-         log.error(message, testResult.getThrowable());
-         dumpThreads(testResult.getTestClass().getName());
-      }
+   public void onConfigurationFailure(ITestResult testResult) {
+      String message = String.format("Configuration method %s failed", getTestDesc(testResult));
+      System.out.println(message);
+      log.error(message, testResult.getThrowable());
+   }
+
+   @Override
+   public void onConfigurationSkip(ITestResult testResult) {
+      String message = String.format("Configuration method %s was skipped", getTestDesc(testResult));
+      System.out.println(message);
+      log.error(message);
+   }
+
+   @Override
+   public void onStart(ISuite suite) {
+      addOomLoggingSupport();
+   }
+
+   @Override
+   public void onFinish(ISuite suite) {
+      dumpThreads("");
    }
 
    //todo [anistor] this approach can result in more OOM. maybe it's wiser to remove the whole thing and rely on -XX:+HeapDumpOnOutOfMemoryError
