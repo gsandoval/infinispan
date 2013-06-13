@@ -16,11 +16,10 @@ import static org.testng.Assert.assertTrue;
 @Test(groups = "functional", testName = "api.IgnoreReturnValueForConditionalOperationsTest")
 public class IgnoreReturnValueForConditionalOperationsTest extends MultipleCacheManagersTest {
 
-   protected boolean transactional;
+   protected boolean transactional = false;
 
    @Override
    protected void createCacheManagers() throws Throwable {
-      transactional = false;
       ConfigurationBuilder dcc = getDefaultClusteredCacheConfig(CacheMode.DIST_SYNC, transactional);
       createCluster(dcc, 2);
       waitForClusterToForm();
