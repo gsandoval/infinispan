@@ -15,6 +15,7 @@ public class TransportFlags {
    private int sideIndex = -1;
    private String siteName;
    private String relayConfig;
+   private String jgroupsStack;
 
    public TransportFlags withFD(boolean withFD) {
       this.withFD = withFD;
@@ -49,6 +50,16 @@ public class TransportFlags {
       return this;
    }
 
+   public TransportFlags withTcp() {
+      this.jgroupsStack = "tcp";
+      return this;
+   }
+
+   public TransportFlags withUdp() {
+      this.jgroupsStack = "udp";
+      return this;
+   }
+
    public String siteName() {
       return siteName;
    }
@@ -63,5 +74,9 @@ public class TransportFlags {
 
    public boolean isSiteIndexSpecified() {
       return siteIndex() >= 0;
+   }
+
+   public String jgroupsStack() {
+      return jgroupsStack;
    }
 }

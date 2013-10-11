@@ -10,7 +10,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestResourceTracker;
-import org.infinispan.topology.LocalTopologyManager;
 import org.testng.annotations.Test;
 
 /**
@@ -62,6 +61,12 @@ public class LargeClusterStressTest extends MultipleCacheManagersTest {
          waitForClusterToForm("replcache" + j);
          waitForClusterToForm("distcache" + j);
       }
-      TestingUtil.extractGlobalComponent(manager(0), LocalTopologyManager.class).setRebalancingEnabled(false);
+   }
+
+   @Test(dependsOnMethods = "testStartLargeCluster")
+   public void testStopLargeCluster() {
+      for (int i = 0; i < NUM_NODES; i++) {
+         manager(i).stop();
+      }
    }
 }

@@ -78,9 +78,12 @@ public class JGroupsConfigBuilder {
    }
 
    public static String getJGroupsConfig(String fullTestName, TransportFlags flags) {
-      if (JGROUPS_STACK.equalsIgnoreCase("tcp")) return getTcpConfig(fullTestName, flags);
-      if (JGROUPS_STACK.equalsIgnoreCase("udp")) return getUdpConfig(fullTestName, flags);
-      throw new IllegalStateException("Unknown protocol stack : " + JGROUPS_STACK);
+      String jgroupsStack = flags.jgroupsStack();
+      if (jgroupsStack == null) jgroupsStack = JGROUPS_STACK;
+
+      if (jgroupsStack.equalsIgnoreCase("tcp")) return getTcpConfig(fullTestName, flags);
+      if (jgroupsStack.equalsIgnoreCase("udp")) return getUdpConfig(fullTestName, flags);
+      throw new IllegalStateException("Unknown protocol stack : " + jgroupsStack);
    }
 
    public static String getTcpConfig(String fullTestName, TransportFlags flags) {
