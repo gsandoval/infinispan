@@ -167,6 +167,7 @@ public class DefaultConsistentHash implements ConsistentHash {
 
    @Override
    public Set<Address> locateAllOwners(Collection<Object> keys) {
+      // TODO if keys.size == 1 return locateOwners(keys.get(0))
       // Use a HashSet assuming most of the time the number of keys is small.
       HashSet<Integer> segments = new HashSet<Integer>();
       for (Object key : keys) {

@@ -44,7 +44,7 @@ public class TestCacheManagerFactory {
 
    public static final int MAX_ASYNC_EXEC_THREADS = 6;
    public static final int ASYNC_EXEC_QUEUE_SIZE = 10000;
-   public static final int MAX_REQ_EXEC_THREADS = 6;
+   public static final int MAX_REQ_EXEC_THREADS = Integer.getInteger("infinispan.remoteExecutor.maxThreads", 6);
    public static final int REQ_EXEC_QUEUE_SIZE = 0;
    public static final int KEEP_ALIVE = 30000;
 
@@ -314,7 +314,7 @@ public class TestCacheManagerFactory {
       amendTransport(cfg, new TransportFlags());
    }
 
-   private static void amendTransport(GlobalConfigurationBuilder builder, TransportFlags flags) {
+   public static void amendTransport(GlobalConfigurationBuilder builder, TransportFlags flags) {
       org.infinispan.configuration.global.GlobalConfiguration gc = builder.build();
       if (gc.transport().transport() != null) { //this is local
          String testName = TestResourceTracker.getCurrentTestName();
