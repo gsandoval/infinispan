@@ -49,9 +49,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.infinispan.commons.util.Util.*;
 import static org.infinispan.remoting.transport.jgroups.JGroupsTransport.fromJGroupsAddress;
 
@@ -556,9 +558,15 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
        * @return true if the response waited for is valid, false if it isn't or if it times out.
        */
       public synchronized boolean waitForResponse(long timeToWaitMillis) throws Exception {
-         while (expectedResponses > 0 && retval == null) {
+         long remainingMillis = timeToWaitMillis;
+         long endNanos = System.nanoTime();
+         while (remainingMillis > 0) {
             try {
-               this.wait(timeToWaitMillis);
+               TimeUnit.NANOSECONDS.timedWait(this, remainingMillis);
+               if (retval != null || expectedResponses <= 0)
+                  break;
+
+               remainingMillis = NANOSECONDS.toMillis(endNanos - System.nanoTime());
             } catch (InterruptedException e) {
                // reset interruption flag
                Thread.currentThread().interrupt();
