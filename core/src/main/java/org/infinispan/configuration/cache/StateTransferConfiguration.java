@@ -14,15 +14,17 @@ public class StateTransferConfiguration {
    private int chunkSize;
    private boolean awaitInitialTransfer;
    private Boolean originalAwaitInitialTransfer;
+   private boolean purgeOnJoin;
 
    StateTransferConfiguration(boolean fetchInMemoryState, Boolean originalFetchInMemoryState, long timeout, int chunkSize,
-                              boolean awaitInitialTransfer, Boolean originalAwaitInitialTransfer) {
+                              boolean awaitInitialTransfer, Boolean originalAwaitInitialTransfer, boolean purgeOnJoin) {
       this.fetchInMemoryState = fetchInMemoryState;
       this.originalFetchInMemoryState = originalFetchInMemoryState;
       this.timeout = timeout;
       this.chunkSize = chunkSize;
       this.awaitInitialTransfer = awaitInitialTransfer;
       this.originalAwaitInitialTransfer = originalAwaitInitialTransfer;
+      this.purgeOnJoin = purgeOnJoin;
    }
 
    /**
@@ -88,15 +90,24 @@ public class StateTransferConfiguration {
       return originalAwaitInitialTransfer;
    }
 
+   /**
+    * If true, ignore the preloaded entries and purge the cache stores when starting up
+    * and the node is not the only one in the cluster.
+    */
+   public boolean purgeOnJoin() {
+      return purgeOnJoin;
+   }
+
    @Override
    public String toString() {
       return "StateTransferConfiguration{" +
-            "chunkSize=" + chunkSize +
-            ", fetchInMemoryState=" + fetchInMemoryState +
+            "fetchInMemoryState=" + fetchInMemoryState +
             ", originalFetchInMemoryState=" + originalFetchInMemoryState +
             ", timeout=" + timeout +
+            ", chunkSize=" + chunkSize +
             ", awaitInitialTransfer=" + awaitInitialTransfer +
             ", originalAwaitInitialTransfer=" + originalAwaitInitialTransfer +
+            ", purgeOnJoin=" + purgeOnJoin +
             '}';
    }
 
@@ -107,13 +118,14 @@ public class StateTransferConfiguration {
 
       StateTransferConfiguration that = (StateTransferConfiguration) o;
 
+      if (awaitInitialTransfer != that.awaitInitialTransfer) return false;
       if (chunkSize != that.chunkSize) return false;
       if (fetchInMemoryState != that.fetchInMemoryState) return false;
+      if (purgeOnJoin != that.purgeOnJoin) return false;
       if (timeout != that.timeout) return false;
-      if (originalFetchInMemoryState != null ? !originalFetchInMemoryState.equals(that.originalFetchInMemoryState) : that.originalFetchInMemoryState != null)
-         return false;
-      if (awaitInitialTransfer != that.awaitInitialTransfer) return false;
       if (originalAwaitInitialTransfer != null ? !originalAwaitInitialTransfer.equals(that.originalAwaitInitialTransfer) : that.originalAwaitInitialTransfer != null)
+         return false;
+      if (originalFetchInMemoryState != null ? !originalFetchInMemoryState.equals(that.originalFetchInMemoryState) : that.originalFetchInMemoryState != null)
          return false;
 
       return true;
@@ -127,7 +139,7 @@ public class StateTransferConfiguration {
       result = 31 * result + chunkSize;
       result = 31 * result + (awaitInitialTransfer ? 1 : 0);
       result = 31 * result + (originalAwaitInitialTransfer != null ? originalAwaitInitialTransfer.hashCode() : 0);
+      result = 31 * result + (purgeOnJoin ? 1 : 0);
       return result;
    }
-
 }

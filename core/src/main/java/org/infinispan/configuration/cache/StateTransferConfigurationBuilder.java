@@ -23,6 +23,7 @@ public class StateTransferConfigurationBuilder extends
    private Boolean awaitInitialTransfer = null;
    private int chunkSize = 512;
    private long timeout = TimeUnit.MINUTES.toMillis(4);
+   private boolean purgeOnJoin = false;
 
    StateTransferConfigurationBuilder(ClusteringConfigurationBuilder builder) {
       super(builder);
@@ -80,6 +81,15 @@ public class StateTransferConfigurationBuilder extends
       return timeout(unit.toMillis(l));
    }
 
+   /**
+    * If true, ignore the preloaded entries and purge the cache stores when starting up
+    * and the node is not the only one in the cluster.
+    */
+   public StateTransferConfigurationBuilder purgeOnJoin(boolean enabled) {
+      this.purgeOnJoin = enabled;
+      return this;
+   }
+
    @Override
    public void validate() {
       if (chunkSize <= 0) {
@@ -123,7 +133,7 @@ public class StateTransferConfigurationBuilder extends
          _awaitInitialTransfer = false;
       }
       return new StateTransferConfiguration(_fetchInMemoryState, fetchInMemoryState,
-            timeout, chunkSize, _awaitInitialTransfer, awaitInitialTransfer);
+            timeout, chunkSize, _awaitInitialTransfer, awaitInitialTransfer, purgeOnJoin);
    }
 
    @Override
@@ -132,6 +142,7 @@ public class StateTransferConfigurationBuilder extends
       this.awaitInitialTransfer = template.originalAwaitInitialTransfer();
       this.timeout = template.timeout();
       this.chunkSize = template.chunkSize();
+      this.purgeOnJoin = template.purgeOnJoin();
       return this;
    }
 
