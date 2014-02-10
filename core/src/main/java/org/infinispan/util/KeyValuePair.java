@@ -33,6 +33,10 @@ public class KeyValuePair<K,V> {
       return value;
    }
 
+   @Override
+   public String toString() {
+      return key + " = " + value;
+   }
 
    public static class Externalizer extends AbstractExternalizer<KeyValuePair> {
 

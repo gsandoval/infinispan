@@ -1,5 +1,11 @@
 package org.infinispan.distribution.ch;
 
+import org.infinispan.commons.hash.MurmurHash3;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.test.AbstractInfinispanTest;
+import org.jgroups.util.UUID;
+import org.testng.annotations.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -7,18 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.infinispan.commons.hash.MurmurHash3;
-import org.infinispan.distribution.ch.impl.DefaultConsistentHash;
-import org.infinispan.distribution.ch.impl.OwnershipStatistics;
-import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.infinispan.test.AbstractInfinispanTest;
-import org.jgroups.util.UUID;
-import org.testng.annotations.Test;
-
 import static java.lang.Math.sqrt;
-import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.Assert.assertEquals;
 
 /**
  * Tests the uniformity of the SyncConsistentHashFactory algorithm, which is very similar to the 5.1
@@ -39,36 +35,37 @@ import static org.testng.AssertJUnit.assertEquals;
  * @author Dan Berindei
  * @since 5.2
  */
-@Test(testName = "distribution.ch.SyncConsistentHashFactoryKeyDistributionTest", groups = "profiling")
-public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfinispanTest {
+@Test(testName = "distribution.ch.NewSyncConsistentHashFactoryKeyDistributionTest", groups = "manual", enabled = true, description = "See the results in vnodes_key_dist.txt")
+public class NewSyncConsistentHashFactoryKeyDistributionTest extends AbstractInfinispanTest {
 
    // numbers of nodes to test
-   public static final int[] NUM_NODES = {2, 4, 8, 16, 32, 64, 128, 256};
+   public static final int[] NUM_NODES = {256};// {2, 4, 8, 16, 32, 64, 128, 256};
    // numbers of virtual nodes to test
-   public static final int[] NUM_SEGMENTS = {128, 256, 512, 1024, 2048};
+   public static final int[] NUM_SEGMENTS = {128, 256, 512, 1024, 2048, 4096};
    // number of key owners
    public static final int NUM_OWNERS = 2;
 
    // controls precision + duration of test
    public static final int LOOPS = 1000;
    // confidence intervals to print for any owner
-   public static final double[] INTERVALS = { 0.9, 1.10, 1.15 };
+   public static final double[] INTERVALS = { 1.25 };
    // confidence intervals to print for primary owner
-   public static final double[] INTERVALS_PRIMARY = { 0.9, 1.10, 1.15 };
+   public static final double[] INTERVALS_PRIMARY = { 1.5 };
    // percentiles to print
    public static final double[] PERCENTILES = { .999 };
 
-   protected DefaultConsistentHash createConsistentHash(int numSegments, int numOwners, List<Address> members) {
-      MurmurHash3 hash = MurmurHash3.getInstance();
-      ConsistentHashFactory<DefaultConsistentHash> chf = new SyncConsistentHashFactory();
-      DefaultConsistentHash ch = chf.create(hash, numOwners, numSegments, members, null);
+   private DefaultConsistentHash createConsistentHash(int numSegments, int numOwners, int numNodes) {
+      MurmurHash3 hash = new MurmurHash3();
+      NewSyncConsistentHashFactory chf = new NewSyncConsistentHashFactory();
+      DefaultConsistentHash ch = chf.create(hash, numOwners, numSegments, createAddresses(numNodes), null);
       return ch;
    }
 
-   protected List<Address> createAddresses(int numNodes) {
+   private List<Address> createAddresses(int numNodes) {
       ArrayList<Address> addresses = new ArrayList<Address>(numNodes);
       for (int i = 0; i < numNodes; i++) {
-         addresses.add(new IndexedJGroupsAddress(UUID.randomUUID(), i));
+         UUID uuid = UUID.randomUUID();
+         addresses.add(new IndexedJGroupsAddress(uuid, i));
       }
       return addresses;
    }
@@ -86,7 +83,7 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
                   metrics.put(metricName, metric);
                }
                metric.put(ns, metricValue);
-            }
+            };
          }
 
          printMetrics(nn, metrics);
@@ -95,8 +92,8 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
 
    private void printMetrics(int nn, Map<String, Map<Integer, String>> metrics) {
       // print the header
-      System.out.printf("Distribution for %3d nodes (relative to the average)\n===\n", nn);
-      System.out.printf("%30s = ", "Segments");
+      System.out.printf("Distribution for %3d nodes\n===\n", nn);
+      System.out.printf("%54s = ", "Segments");
       for (int i = 0; i < NUM_SEGMENTS.length; i++) {
          System.out.printf("%7d", NUM_SEGMENTS[i]);
       }
@@ -107,7 +104,7 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
          String metricName = entry.getKey();
          Map<Integer, String> metricValues = entry.getValue();
 
-         System.out.printf("%30s = ", metricName);
+         System.out.printf("%54s = ", metricName);
          for (int i = 0; i < NUM_SEGMENTS.length; i++) {
             System.out.print(metricValues.get(NUM_SEGMENTS[i]));
          }
@@ -117,15 +114,13 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
    }
 
    private Map<String, String> computeMetrics(int numSegments, int numOwners, int numNodes) {
-      List<Address> members = createAddresses(numNodes);
       Map<String, String> metrics = new HashMap<String, String>();
       long[] distribution = new long[LOOPS * numNodes];
       long[] distributionPrimary = new long[LOOPS * numNodes];
       int distIndex = 0;
       for (int i = 0; i < LOOPS; i++) {
-         DefaultConsistentHash ch = createConsistentHash(numSegments, numOwners, members);
+         DefaultConsistentHash ch = createConsistentHash(numSegments, numOwners, numNodes);
          OwnershipStatistics stats = new OwnershipStatistics(ch, ch.getMembers());
-         assertEquals(numSegments * numOwners, stats.sumOwned());
          for (Address node : ch.getMembers()) {
             distribution[distIndex] = stats.getOwned(node);
             distributionPrimary[distIndex] = stats.getPrimaryOwned(node);
@@ -146,7 +141,7 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
       long sum = 0;
       for (long x : distribution) sum += x;
       assertEquals(sum, (long) LOOPS * numOwners * numSegments);
-      mean = sum / numNodes / LOOPS;
+      mean = (double) sum / numNodes / LOOPS;
 
       double variance = 0;
       for (long x : distribution) variance += (x - mean) * (x - mean);
@@ -154,10 +149,9 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
       double stdDev = sqrt(variance);
       // metrics.put(prefix + " relative standard deviation", stdDev / mean);
 
-      long min = distribution[0];
       long max = distribution[distribution.length - 1];
-      addDoubleMetric(metrics, prefix + " min", (double) min / mean);
-      addDoubleMetric(metrics, prefix + " max", (double) max / mean);
+      // metrics.put(prefix + " min", (double) min / mean);
+      addDoubleMetric(metrics, prefix + " max(num_keys(node)/mean)", (double) max / mean);
 
       double[] intervalConfidence = new double[intervals.length];
       int intervalIndex = 0;
@@ -176,9 +170,9 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
 
       for (int i = 0; i < intervals.length; i++) {
          if (intervals[i] < 1) {
-            addPercentageMetric(metrics, String.format("%s %% < %3.2f", prefix, intervals[i]), intervalConfidence[i]);
+            addPercentageMetric(metrics, String.format("%s P(num_keys(node) < %3.2f * mean)", prefix, intervals[i]), intervalConfidence[i]);
          } else {
-            addPercentageMetric(metrics, String.format("%s %% > %3.2f", prefix, intervals[i]), 1 - intervalConfidence[i]);
+            addPercentageMetric(metrics, String.format("%s P(num_keys(node) > %3.2f * mean)", prefix, intervals[i]), 1 - intervalConfidence[i]);
          }
       }
 
@@ -187,7 +181,7 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
          percentiles[i] = (double)distribution[(int) Math.ceil(PERCENTILES[i] * (LOOPS * numNodes - 1))] / mean;
       }
       for (int i = 0; i < PERCENTILES.length; i++) {
-         addDoubleMetric(metrics, String.format("%s %5.2f%% percentile", prefix, PERCENTILES[i] * 100), percentiles[i]);
+         addDoubleMetric(metrics, String.format("%s P(num_keys(node) <= x * mean) = %5.2f%% => x", prefix, PERCENTILES[i] * 100), percentiles[i]);
       }
    }
 
@@ -200,14 +194,3 @@ public class SyncConsistentHashFactoryKeyDistributionTest extends AbstractInfini
    }
 }
 
-/**
- * We extend JGroupsAddress to make mapping an address to a node easier.
- */
-class IndexedJGroupsAddress extends JGroupsAddress {
-   final int nodeIndex;
-
-   IndexedJGroupsAddress(org.jgroups.Address address, int nodeIndex) {
-      super(address);
-      this.nodeIndex = nodeIndex;
-   }
-}
