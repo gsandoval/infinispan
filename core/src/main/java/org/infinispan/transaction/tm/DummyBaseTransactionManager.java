@@ -45,6 +45,7 @@ public class DummyBaseTransactionManager implements TransactionManager, Serializ
                " is already associated with a transaction (" + currentTx + ")");
       DummyTransaction tx = new DummyTransaction(this);
       setTransaction(tx);
+      log.tracef("Started transaction %s", tx);
    }
 
    /**

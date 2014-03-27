@@ -64,6 +64,7 @@ public class DummyTransaction implements Transaction {
          runPrepare();
          if (status == Status.STATUS_MARKED_ROLLBACK || status == Status.STATUS_ROLLING_BACK) {
             runRollback();
+            log.tracef("Rolled back transaction %s", this);
             throw new RollbackException("Exception rolled back, status is: " + status);
          }
          runCommitTx();
@@ -310,6 +311,7 @@ public class DummyTransaction implements Transaction {
       } finally {
          //notify synchronizations
          notifyAfterCompletion(status);
+         log.tracef("Committed transaction %s", this);
          DummyBaseTransactionManager.setTransaction(null);
       }
    }
