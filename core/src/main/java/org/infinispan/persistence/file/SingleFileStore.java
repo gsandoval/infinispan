@@ -545,7 +545,12 @@ public class SingleFileStore<K, V> implements AdvancedLoadWriteStore<K, V> {
             }
          });
       }
-      eacs.waitUntilAllCompleted();
+      try {
+         eacs.waitUntilAllCompleted();
+      } catch (InterruptedException e) {
+         Thread.currentThread().interrupt();
+         throw new PersistenceException(e);
+      }
       if (eacs.isExceptionThrown()) {
          throw new PersistenceException("Execution exception!", eacs.getFirstException());
       }
