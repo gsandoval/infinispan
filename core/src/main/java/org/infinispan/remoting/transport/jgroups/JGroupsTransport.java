@@ -268,17 +268,6 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
       if (dispatcher != null) {
          log.stoppingRpcDispatcher(clusterName);
          dispatcher.stop();
-         if (channel != null) {
-            // Remove reference to up_handler
-            UpHandler handler = channel.getUpHandler();
-            if (handler instanceof Muxer<?>) {
-               @SuppressWarnings("unchecked")
-               Muxer<UpHandler> mux = (Muxer<UpHandler>) handler;
-               mux.setDefaultHandler(null);
-            } else {
-               channel.setUpHandler(null);
-            }
-         }
       }
 
       channel = null;

@@ -79,7 +79,7 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
       this.gcr = gcr;
       this.handler = globalHandler;
 
-      // MessageDispatcher superclass constructors will call start() so perform all init here
+      // MessageDispatcher superclass constructors will call start() so perform all init here, after our fields were initialized
       this.setMembershipListener(transport);
       this.setChannel(channel);
       // If existing up handler is a muxing up handler, setChannel(..) will not have replaced it
@@ -91,6 +91,22 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
       }
       channel.addChannelListener(this);
       asyncDispatching(true);
+   }
+
+   @Override
+   public void stop() {
+      super.stop();
+
+      channel.removeChannelListener(this);
+
+      UpHandler handler = channel.getUpHandler();
+      if (handler instanceof Muxer<?>) {
+         @SuppressWarnings("unchecked")
+         Muxer<UpHandler> mux = (Muxer<UpHandler>) handler;
+         mux.setDefaultHandler(null);
+      } else {
+         channel.setUpHandler(null);
+      }
    }
 
    private boolean isValid(Message req) {

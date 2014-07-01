@@ -160,7 +160,7 @@ public class ComponentRegistry extends AbstractComponentRegistry {
                return false;
          }
       }
-      return isGlobal(nameIsFQCN ? name : componentClassName);
+      return isGlobal(nameIsFQCN ? name : componentClassName); // TODO isGlobal(componentClassName)
    }
 
    @Override
