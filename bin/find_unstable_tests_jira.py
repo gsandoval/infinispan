@@ -16,7 +16,7 @@ import csv
 import sys
 
 default_base_url = 'https://issues.jboss.org'
-jql_search = 'project = ISPN AND (component in ("Test Suite - Core", "Test Suite - Server", "Test Suite - Query") OR labels = testsuite_stability) AND status in (Open, "Coding In Progress", Reopened, "Pull Request Sent") ORDER BY priority DESC'
+jql_search = 'project = ISPN AND (component in ("Test Suite - Core", "Test Suite - Server", "Test Suite - Query") OR labels = testsuite_stability) AND (status in (Open, "Coding In Progress", Reopened, "Pull Request Sent") OR resolutiondate > "-1w") ORDER BY priority DESC'
 
 
 def main(args):

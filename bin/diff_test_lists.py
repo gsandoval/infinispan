@@ -7,6 +7,7 @@
 import argparse
 import csv
 import os
+import itertools
 from pprint import pprint
 
 
@@ -30,22 +31,21 @@ def parse_tsv(annotations_file, testNameReplacement, verbose):
 
 def print_diffs(target_dict, source1_dict, source2_dict, verbose):
   diffs = []
-  for test, rows in sorted(source1_dict.iteritems()):
+  for test, rows in sorted(itertools.chain(source1_dict.iteritems(), source2_dict.iteritems())):
     if test not in target_dict:
       diffs.append((test, rows))
+
   rows = sorted(diffs)
   if verbose: pprint(rows)
 
+  prev_test = ''
   for test, rows in diffs:
-    print(test)
+    if test != prev_test:
+      print('')
+      print(test)
     for row in rows:
       print("\t%s" % ("\t".join(row)))
-    source2_rows = source2_dict.get(test)
-    if source2_rows:
-      for row in source2_rows:
-        print("\t%s" % ("\t".join(row)))
-
-    print('')
+    prev_test = test
 
 def main(args):
   verbose = args.verbose

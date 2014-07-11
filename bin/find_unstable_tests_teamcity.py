@@ -17,7 +17,7 @@ import csv
 import sys
 
 default_base_url = 'http://ci.infinispan.org'
-default_build_types = ['Master Hotspot JDK6', 'Master Hotspot JDK7', 'Master Unstable Tests JDK6']
+default_build_types = ['Master Hotspot JDK7', 'Master Hotspot JDK8', 'Master Unstable Tests JDK7', 'Master Stress Tests JDK7', 'Master Hotspot HDK7 TRACE']
 default_days = 15
 
 
@@ -41,12 +41,12 @@ def main(args):
 
   buildTypes = get_json(resource, "buildTypes")
   watched_build_type_ids = [bt['id'] for bt in buildTypes['buildType']
-      if bt['name'] in default_build_types]
+      if bt['name'] in build_type_names]
   if verbose: print("Found build ids: %s" %watched_build_type_ids)
 
   unstable_tests = []
   for btid in watched_build_type_ids:
-    days_delta = datetime.timedelta(days=default_days)
+    days_delta = datetime.timedelta(days=int(days))
     days_ago = datetime.datetime.utcnow() - days_delta
     date = days_ago.strftime('%Y%m%dT%H%M%S') + '+0000'
 
