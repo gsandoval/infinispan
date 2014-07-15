@@ -38,7 +38,7 @@ public class AbstractInfinispanTest {
 
    public static final TimeService TIME_SERVICE = new DefaultTimeService();
 
-   @AfterTest(alwaysRun = true)
+   @AfterMethod(alwaysRun = true)
    protected void killSpawnedThreads() {
       List<Runnable> runnables = defaultExecutorService.shutdownNow();
       if (!runnables.isEmpty()) {
