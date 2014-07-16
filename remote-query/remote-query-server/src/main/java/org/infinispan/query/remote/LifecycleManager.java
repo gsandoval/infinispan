@@ -114,6 +114,10 @@ public class LifecycleManager extends AbstractModuleLifecycle {
       SerializationContext serializationContext = ProtobufMetadataManager.getSerializationContext(cacheManager);
       cr.registerComponent(new ProtobufMatcher(serializationContext), ProtobufMatcher.class);
 
+      if (cfg.compatibility().enabled()) {
+         cr.registerComponent(new CompatibilityReflectionMatcher(serializationContext), CompatibilityReflectionMatcher.class);
+      }
+
       if (cfg.indexing().enabled() && !cfg.compatibility().enabled()) {
          log.infof("Registering RemoteValueWrapperInterceptor for cache %s", cacheName);
          createRemoteIndexingInterceptor(cr, cfg);
@@ -151,8 +155,8 @@ public class LifecycleManager extends AbstractModuleLifecycle {
    @Override
    public void cacheStarted(ComponentRegistry cr, String cacheName) {
       Configuration configuration = cr.getComponent(Configuration.class);
-      boolean removeValueWrappingEnabled = configuration.indexing().enabled() && !configuration.compatibility().enabled();
-      if (!removeValueWrappingEnabled) {
+      boolean remoteValueWrappingEnabled = configuration.indexing().enabled() && !configuration.compatibility().enabled();
+      if (!remoteValueWrappingEnabled) {
          if (verifyChainContainsRemoteValueWrapperInterceptor(cr)) {
             throw new IllegalStateException("It was NOT expected to find the RemoteValueWrapperInterceptor registered in the InterceptorChain as indexing was disabled, but it was found");
          }
