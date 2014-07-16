@@ -20,7 +20,7 @@
 
       <CacheManagerImpl>org.infinispan.jcache.JCacheManager</CacheManagerImpl>
       <CacheImpl>org.infinispan.jcache.JCache</CacheImpl>
-      <CacheInvocationContextImpl>org.infinispan.jcache.annotation.CacheKeyInvocationContextImpl</CacheInvocationContextImpl>
+      <CacheInvocationContextImpl>org.infinispan.cdi.interceptor.CacheKeyInvocationContextImpl</CacheInvocationContextImpl>
    </properties>
 
    <dependencies>

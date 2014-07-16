@@ -1,6 +1,6 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
-import org.infinispan.jcache.logging.Log;
+import org.infinispan.cdi.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import javax.cache.annotation.CacheDefaults;
@@ -11,7 +11,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import static org.infinispan.jcache.annotation.Contracts.assertNotNull;
+import static org.infinispan.cdi.util.Contracts.assertNotNull;
 
 /**
  * An helper class providing useful methods for cache lookup.

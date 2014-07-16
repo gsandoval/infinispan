@@ -1,5 +1,7 @@
 package org.infinispan.jcache.annotation;
 
+import org.infinispan.cdi.interceptor.AbstractCacheRemoveAllInterceptor;
+import org.infinispan.cdi.interceptor.CacheKeyInvocationContextFactory;
 import org.infinispan.jcache.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 

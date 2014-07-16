@@ -1,4 +1,4 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
 import javax.cache.annotation.CacheKeyGenerator;
 import java.lang.annotation.Annotation;

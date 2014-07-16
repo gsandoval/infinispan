@@ -1,4 +1,4 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -9,7 +9,7 @@ import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 
-import static org.infinispan.jcache.annotation.Contracts.assertNotNull;
+import static org.infinispan.cdi.util.Contracts.assertNotNull;
 
 /**
  * Default {@link javax.cache.annotation.CacheResolver} implementation for

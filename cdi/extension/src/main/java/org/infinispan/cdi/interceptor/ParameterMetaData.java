@@ -1,4 +1,4 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;

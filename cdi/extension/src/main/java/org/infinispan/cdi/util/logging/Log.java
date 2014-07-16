@@ -7,6 +7,8 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
+import javax.cache.CacheException;
+
 import static org.jboss.logging.Logger.Level.INFO;
 
 /**
@@ -28,5 +30,23 @@ public interface Log extends BasicLogger {
 
    @Message(value = "%s parameter must not be null", id = 17003)
    IllegalArgumentException parameterMustNotBeNull(String parameterName);
+
+   @Message(value = "Unable to instantiate CacheKeyGenerator with type '%s'", id = 17004)
+   CacheException unableToInstantiateCacheKeyGenerator(Class<?> type, @Cause Throwable cause);
+
+   @Message(value = "Method named '%s' is annotated with CacheRemoveEntry but doesn't specify a cache name", id = 17005)
+   CacheException cacheRemoveEntryMethodWithoutCacheName(String methodName);
+
+   @Message(value = "Method named '%s' is annotated with CacheRemoveAll but doesn't specify a cache name", id = 17006)
+   CacheException cacheRemoveAllMethodWithoutCacheName(String methodName);
+
+   @Message(value = "Method named '%s' is not annotated with CacheResult, CachePut, CacheRemoveEntry or CacheRemoveAll", id = 17007)
+   IllegalArgumentException methodWithoutCacheAnnotation(String methodName);
+
+   @Message(value = "Method named '%s' must have only one parameter annotated with @CacheValue", id = 17008)
+   CacheException cachePutMethodWithMoreThanOneCacheValueParameter(String methodName);
+
+   @Message(value = "Method named '%s' must have at least one parameter annotated with @CacheValue", id = 17009)
+   CacheException cachePutMethodWithoutCacheValueParameter(String methodName);
 
 }

@@ -1,7 +1,6 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
-import org.infinispan.jcache.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.cdi.util.logging.Log;
 
 import javax.cache.Cache;
 import javax.cache.annotation.CacheKeyGenerator;

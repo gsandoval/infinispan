@@ -1,4 +1,4 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.util;
 
 import java.util.LinkedHashSet;
 import java.util.Set;

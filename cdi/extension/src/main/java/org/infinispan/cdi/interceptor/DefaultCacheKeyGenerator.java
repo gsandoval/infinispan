@@ -1,4 +1,4 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
 import javax.cache.annotation.CacheInvocationParameter;
 import javax.cache.annotation.CacheKeyGenerator;
@@ -7,7 +7,7 @@ import javax.cache.annotation.GeneratedCacheKey;
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 
-import static org.infinispan.jcache.annotation.Contracts.assertNotNull;
+import static org.infinispan.cdi.util.Contracts.assertNotNull;
 
 /**
  * Default {@link javax.cache.annotation.CacheKeyGenerator} implementation.

@@ -1,7 +1,7 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
+import org.infinispan.cdi.util.logging.Log;
 import org.infinispan.commons.util.ReflectionUtil;
-import org.infinispan.jcache.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import javax.cache.annotation.CacheInvocationParameter;

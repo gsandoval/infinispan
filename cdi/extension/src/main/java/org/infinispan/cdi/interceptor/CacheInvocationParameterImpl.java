@@ -1,4 +1,6 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
+
+import org.infinispan.cdi.interceptor.ParameterMetaData;
 
 import javax.cache.annotation.CacheInvocationParameter;
 import java.lang.annotation.Annotation;

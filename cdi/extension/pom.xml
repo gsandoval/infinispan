@@ -45,7 +45,6 @@
          <artifactId>infinispan-client-hotrod</artifactId>
       </dependency>
 
-      
       <dependency>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging</artifactId>
@@ -99,7 +98,6 @@
       <dependency>
          <groupId>javax.cache</groupId>
          <artifactId>cache-api</artifactId>
-         <scope>test</scope>
       </dependency>
    </dependencies>
    <build>

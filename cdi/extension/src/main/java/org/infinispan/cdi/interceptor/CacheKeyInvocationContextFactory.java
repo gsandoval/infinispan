@@ -1,6 +1,6 @@
-package org.infinispan.jcache.annotation;
+package org.infinispan.cdi.interceptor;
 
-import org.infinispan.jcache.logging.Log;
+import org.infinispan.cdi.util.logging.Log;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.util.logging.LogFactory;
 
@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.infinispan.jcache.annotation.CacheLookupHelper.getCacheKeyGenerator;
-import static org.infinispan.jcache.annotation.CacheLookupHelper.getCacheName;
-import static org.infinispan.jcache.annotation.CollectionsHelper.asSet;
-import static org.infinispan.jcache.annotation.Contracts.assertNotNull;
+import static org.infinispan.cdi.interceptor.CacheLookupHelper.getCacheKeyGenerator;
+import static org.infinispan.cdi.interceptor.CacheLookupHelper.getCacheName;
+import static org.infinispan.cdi.util.CollectionsHelper.asSet;
+import static org.infinispan.cdi.util.Contracts.assertNotNull;
 
 /**
  * @author Kevin Pollet <kevin.pollet@serli.com> (C) 2011 SERLI
@@ -82,15 +82,15 @@ public class CacheKeyInvocationContextFactory {
 
          if (method.isAnnotationPresent(CacheResult.class)) {
             final CacheResult cacheResultAnnotation = method.getAnnotation(CacheResult.class);
-            cacheKeyGenerator = getCacheKeyGenerator(beanManager, cacheResultAnnotation.cacheKeyGenerator(), cacheDefaultsAnnotation);
-            cacheName = getCacheName(method, cacheResultAnnotation.cacheName(), cacheDefaultsAnnotation, true);
+            cacheKeyGenerator = CacheLookupHelper.getCacheKeyGenerator(beanManager, cacheResultAnnotation.cacheKeyGenerator(), cacheDefaultsAnnotation);
+            cacheName = CacheLookupHelper.getCacheName(method, cacheResultAnnotation.cacheName(), cacheDefaultsAnnotation, true);
             aggregatedParameterMetaData = getAggregatedParameterMetaData(method, false);
             cacheAnnotation = cacheResultAnnotation;
 
          } else if (method.isAnnotationPresent(CacheRemove.class)) {
             final CacheRemove cacheRemoveEntryAnnotation = method.getAnnotation(CacheRemove.class);
-            cacheKeyGenerator = getCacheKeyGenerator(beanManager, cacheRemoveEntryAnnotation.cacheKeyGenerator(), cacheDefaultsAnnotation);
-            cacheName = getCacheName(method, cacheRemoveEntryAnnotation.cacheName(), cacheDefaultsAnnotation, false);
+            cacheKeyGenerator = CacheLookupHelper.getCacheKeyGenerator(beanManager, cacheRemoveEntryAnnotation.cacheKeyGenerator(), cacheDefaultsAnnotation);
+            cacheName = CacheLookupHelper.getCacheName(method, cacheRemoveEntryAnnotation.cacheName(), cacheDefaultsAnnotation, false);
             aggregatedParameterMetaData = getAggregatedParameterMetaData(method, false);
             cacheAnnotation = cacheRemoveEntryAnnotation;
 
@@ -101,7 +101,7 @@ public class CacheKeyInvocationContextFactory {
          } else if (method.isAnnotationPresent(CacheRemoveAll.class)) {
             final CacheRemoveAll cacheRemoveAllAnnotation = method.getAnnotation(CacheRemoveAll.class);
             cacheKeyGenerator = null;
-            cacheName = getCacheName(method, cacheRemoveAllAnnotation.cacheName(), cacheDefaultsAnnotation, false);
+            cacheName = CacheLookupHelper.getCacheName(method, cacheRemoveAllAnnotation.cacheName(), cacheDefaultsAnnotation, false);
             aggregatedParameterMetaData = getAggregatedParameterMetaData(method, false);
             cacheAnnotation = cacheRemoveAllAnnotation;
 
@@ -111,8 +111,8 @@ public class CacheKeyInvocationContextFactory {
 
          } else if (method.isAnnotationPresent(CachePut.class)) {
             final CachePut cachePutAnnotation = method.getAnnotation(CachePut.class);
-            cacheKeyGenerator = getCacheKeyGenerator(beanManager, cachePutAnnotation.cacheKeyGenerator(), cacheDefaultsAnnotation);
-            cacheName = getCacheName(method, cachePutAnnotation.cacheName(), cacheDefaultsAnnotation, true);
+            cacheKeyGenerator = CacheLookupHelper.getCacheKeyGenerator(beanManager, cachePutAnnotation.cacheKeyGenerator(), cacheDefaultsAnnotation);
+            cacheName = CacheLookupHelper.getCacheName(method, cachePutAnnotation.cacheName(), cacheDefaultsAnnotation, true);
             aggregatedParameterMetaData = getAggregatedParameterMetaData(method, true);
             cacheAnnotation = cachePutAnnotation;
 
