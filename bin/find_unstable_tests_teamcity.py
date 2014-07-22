@@ -28,6 +28,7 @@ def main(args):
   password = args.password
   days = args.days
   build_type_names = args.build
+  if verbose: pprint(args)
 
   # This sends the user and password with the request.
   url = "%s/guestAuth/app/rest/" % (server_base_url)
@@ -52,7 +53,10 @@ def main(args):
 
     builds_path = 'buildTypes/id:%s/builds' % btid
     builds = get_json(resource, builds_path, locator = build_locator(sinceDate = date, status = 'FAILURE'))
-    build_ids = [build['id'] for build in builds['build']]
+    if 'build' in builds:
+        build_ids = [build['id'] for build in builds['build']]
+    else:
+        build_ids = []
     if verbose: print("Found build ids for build type %s: %s" % (btid, build_ids))
 
     for bid in build_ids:
@@ -107,11 +111,11 @@ def get_json(resource, path, **params):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument("-b", "--base-url", help="base URL", default=default_base_url)
+  parser.add_argument("-l", "--base-url", help="base URL", default=default_base_url)
   parser.add_argument("-u", "--user", help="user name")
   parser.add_argument("-p", "--password", help="password")
   parser.add_argument("-d", "--days", help="days to search back", default=default_days)
-  parser.add_argument("--build", help="one or more builds to search", nargs='*', action='append', default=default_build_types)
+  parser.add_argument("-b", "--build", help="one or more builds to search", nargs='+', default=default_build_types)
   parser.add_argument("-v", "--verbose", help="print debugging information", action="store_true")
   args = parser.parse_args()
 
