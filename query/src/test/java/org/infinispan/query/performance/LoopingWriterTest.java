@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
  * @author Sanne Grinovero
  * @since 5.3
  */
-@Test(groups = "performance", testName = "query.performance.LoopingWriterTest")
+@Test(groups = "profiling", testName = "query.performance.LoopingWriterTest")
 public class LoopingWriterTest {
 
    private static final int TOTAL_LOOPS = Integer.MAX_VALUE;

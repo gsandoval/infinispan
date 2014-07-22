@@ -20,7 +20,7 @@ import static java.lang.Math.*;
  * @author Manik Surtani
  * @since 4.0
  */
-@Test(testName = "distribution.ConsistentHashPerfTest", groups = "manual", description = "Disabled until we can configure Surefire to skip manual tests")
+@Test(testName = "distribution.ConsistentHashPerfTest", groups = "profiling")
 public class ConsistentHashPerfTest extends AbstractInfinispanTest {
 
    private List<Address> createAddresses(int numNodes) {
