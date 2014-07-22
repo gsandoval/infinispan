@@ -96,9 +96,8 @@ public class InvocationContextTest extends MultipleCacheManagersTest {
       th.join();
       tm.resume(tx);
       tm.rollback();
-      assert throwables.size() == 1;
 
-      for (Throwable thr : throwables) thr.printStackTrace();
+      assert throwables.size() == 1;
       assert throwables.get(0) instanceof CacheException;
       assert throwables.get(0).getCause() instanceof InterruptedException;
    }
@@ -130,9 +129,8 @@ public class InvocationContextTest extends MultipleCacheManagersTest {
       // and now interrupt the thread.
       th.interrupt();
       th.join();
-      assert throwables.size() == 1;
 
-      for (Throwable thr : throwables) thr.printStackTrace();
+      assert throwables.size() == 1;
       assert throwables.get(0) instanceof CacheException;
    }
 

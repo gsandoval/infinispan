@@ -20,6 +20,8 @@ import org.infinispan.arquillian.core.WithRunningServer;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.commons.logging.Log;
+import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.server.test.category.CacheStore;
 import org.infinispan.server.test.util.ITestUtils;
 import org.jboss.arquillian.junit.Arquillian;
@@ -40,6 +42,7 @@ import static org.junit.Assert.assertNull;
 @RunWith(Arquillian.class)
 @Category({CacheStore.class})
 public class CustomCacheStoreIT {
+   private static final Log log = LogFactory.getLog(CustomCacheStoreIT.class);
 
     @InfinispanResource("standalone-customcs")
     RemoteInfinispanServer server;
@@ -111,7 +114,7 @@ public class CustomCacheStoreIT {
             out.close();
             tmpZip.delete();
         }catch(Exception e){
-            e.printStackTrace();
+            log.errorf(e, "Error adding files %s to zip archive %s", files, source);
         }
     }
 

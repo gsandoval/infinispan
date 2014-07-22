@@ -53,19 +53,14 @@ public class DistProgrammaticMassIndexTest extends DistributedMassIndexingTest {
       }
    }
 
-   protected void verifyFindsCar(Cache cache, int count, String carMake) {
+   protected void verifyFindsCar(Cache cache, int count, String carMake) throws Exception {
       QueryParser queryParser = createQueryParser("make");
 
-      try {
-         Query luceneQuery = queryParser.parse(carMake);
-         CacheQuery cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery, Car.class);
+      Query luceneQuery = queryParser.parse(carMake);
+      CacheQuery cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery, Car.class);
 
-         assertEquals(count, cacheQuery.getResultSize());
+      assertEquals(count, cacheQuery.getResultSize());
 
-      } catch(ParseException ex) {
-         ex.printStackTrace();
-         fail("Failed due to: " + ex.getMessage());
-      }
       StaticTestingErrorHandler.assertAllGood(cache);
    }
 

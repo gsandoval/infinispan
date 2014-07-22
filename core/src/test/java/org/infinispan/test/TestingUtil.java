@@ -185,8 +185,7 @@ public class TestingUtil {
          }
          catch (Exception e) {
             if (type.equals(Object.class)) {
-               e.printStackTrace();
-               return null;
+               throw new RuntimeException(e);
             } else {
                // try with superclass!!
                type = type.getSuperclass();
@@ -1325,6 +1324,10 @@ public class TestingUtil {
    public static void withCacheManager(CacheManagerCallable c) {
       try {
          c.call();
+      } catch (RuntimeException e) {
+         throw e;
+      } catch (Exception e) {
+         throw new RuntimeException(e);
       } finally {
          TestingUtil.killCacheManagers(c.clearBeforeKill(), c.cm);
       }
@@ -1340,6 +1343,10 @@ public class TestingUtil {
    public static void withCacheManagers(MultiCacheManagerCallable c) {
       try {
          c.call();
+      } catch (RuntimeException e) {
+         throw e;
+      } catch (Exception e) {
+         throw new RuntimeException(e);
       } finally {
          TestingUtil.killCacheManagers(c.cms);
       }
