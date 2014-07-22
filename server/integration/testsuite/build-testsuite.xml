@@ -328,12 +328,17 @@
             addJGroupsSasl="${other.parts}/jgroups-sasl-md5-1.xml" />
         <transform in="clustered.xml" out="testsuite/clustered-with-sasl-krb-0.xml"  
             modifyInfinispan="${infinispan.parts}/default-repl.xml"
-                addJGroupsSasl="${other.parts}/jgroups-sasl-krb-0.xml"
+            addJGroupsSasl="${other.parts}/jgroups-sasl-krb-0.xml"
             addKrbOpts="${other.parts}/kerberos-properties.xml"
             addKrbSecDomain="${other.parts}/kerberos-sec-domain-node0.xml" />
+	<transform in="standalone.xml" out="testsuite/hotrod-auth-ldap.xml" 
+	    modifyInfinispan="${infinispan.parts}/local-secured.xml"
+            hotrodAuth="${infinispan.parts}/hotrod-auth-ldap.xml"
+	    addSecRealm="${other.parts}/ldap-security-realm.xml"
+            addConnection="${other.parts}/ldap-connection.xml"/>
         <transform in="clustered.xml" out="testsuite/clustered-with-sasl-krb-1.xml"  
             modifyInfinispan="${infinispan.parts}/default-repl.xml"
-                addJGroupsSasl="${other.parts}/jgroups-sasl-krb-1.xml"          
+            addJGroupsSasl="${other.parts}/jgroups-sasl-krb-1.xml"          
             addKrbOpts="${other.parts}/kerberos-properties.xml"
             addKrbSecDomain="${other.parts}/kerberos-sec-domain-node1.xml" />
     </target>
@@ -362,6 +367,8 @@
         <attribute name="hotrodAuth" default="false"/>
     	<attribute name="addKrbOpts" default="false"/>
     	<attribute name="addKrbSecDomain" default="false"/>
+    	<attribute name="addSecRealm" default="false"/>
+    	<attribute name="addConnection" default="false"/>
         <element name="jdbc-conf" optional="yes"/>
         <element name="rest-sec" optional="yes"/>
 
@@ -377,6 +384,8 @@
                 <param name="hotrodAuth" expression="@{hotrodAuth}"/>
             	<param name="addKrbOpts" expression="@{addKrbOpts}"/>
             	<param name="addKrbSecDomain" expression="@{addKrbSecDomain}"/>
+            	<param name="addSecRealm" expression="@{addSecRealm}"/>
+            	<param name="addConnection" expression="@{addConnection}"/>
                 <param name="modifyMulticastAddress" expression="@{modifyMulticastAddress}"/>
                 <param name="modifyRemoteDestination" expression="@{modifyRemoteDestination}"/>
                 <param name="modifyOutboundSocketBindingHotRod" expression="@{modifyOutboundSocketBindingHotRod}"/>
