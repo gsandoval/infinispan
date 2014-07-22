@@ -113,7 +113,23 @@
                            <version>${version.jboss.as}</version>
                            <type>zip</type>
                            <overWrite>false</overWrite>
-                           <outputDirectory>${project.build.directory}</outputDirectory>
+                           <outputDirectory>${project.build.directory}/testnode</outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.jboss.as</groupId>
+                           <artifactId>jboss-as-dist</artifactId>
+                           <version>${version.jboss.as}</version>
+                           <type>zip</type>
+                           <overWrite>false</overWrite>
+                           <outputDirectory>${project.build.directory}/node0</outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.jboss.as</groupId>
+                           <artifactId>jboss-as-dist</artifactId>
+                           <version>${version.jboss.as}</version>
+                           <type>zip</type>
+                           <overWrite>false</overWrite>
+                           <outputDirectory>${project.build.directory}/node1</outputDirectory>
                         </artifactItem>
                      </artifactItems>
                   </configuration>
@@ -121,11 +137,43 @@
             </executions>
          </plugin>
 
-         <plugin>
+	 <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-resources-plugin</artifactId>
             <executions>
                <!-- Copy the AS configuration files so we can use our custom configurations -->
+               <execution>
+                  <id>configure-as-testnode</id>
+                  <phase>pre-integration-test</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${project.build.directory}/testnode/jboss-eap-6.2</outputDirectory>
+                     <overwrite>true</overwrite>
+                     <resources>
+                        <resource>
+                           <directory>${project.build.directory}/test-classes/as-config</directory>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>configure-as-node0</id>
+                  <phase>pre-integration-test</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${project.build.directory}/node0/jboss-eap-6.2</outputDirectory>
+                     <overwrite>true</overwrite>
+                     <resources>
+                        <resource>
+                           <directory>${project.build.directory}/test-classes/as-config</directory>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution>
                <execution>
                   <id>configure-as-node</id>
                   <phase>pre-integration-test</phase>
@@ -133,7 +181,7 @@
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
+                     <outputDirectory>${project.build.directory}/node1/jboss-eap-6.2</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>
