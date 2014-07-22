@@ -843,8 +843,7 @@ public class TestingUtil {
     * @return component registry
     */
    public static ComponentRegistry extractComponentRegistry(Cache cache) {
-      ComponentRegistry cr = (ComponentRegistry) extractField(cache, "componentRegistry");
-      if (cr == null) cr = cache.getAdvancedCache().getComponentRegistry();
+      ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
       return cr;
    }
 
