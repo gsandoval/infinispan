@@ -6,7 +6,7 @@ echo dir=$DIR
 for LOG_FILE in `find . -name "*.log"` ; do
     FAILED_TESTS=`cat $LOG_FILE | egrep "Test .* (failed|skipped)\." | sed -e 's/.*(//' -e 's/).*//' | awk -F. ' { print $NF } ' | sort | uniq`
 
-    if [ -z $FAILED_TESTS ]
+    if [ -z "$FAILED_TESTS" ]
     then
       echo "Processing log file: $LOG_FILE. No failed tests."
     else
