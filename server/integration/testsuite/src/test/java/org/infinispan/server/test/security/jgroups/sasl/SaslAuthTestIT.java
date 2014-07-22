@@ -41,6 +41,7 @@ public class SaslAuthTestIT {
 
    final String COORDINATOR_NODE_MD5 = "clustered-sasl-md5-1";
    final String JOINING_NODE_MD5 = "clustered-sasl-md5-2";
+   final String ANOTHER_JOINING_NODE_MD5 = "another-clustered-sasl-md5-2";
    final String MECH_MD5 = "DIGEST-MD5";
    
    final String COORDINATOR_NODE_KRB = "clustered-sasl-krb-1";
@@ -74,6 +75,12 @@ public class SaslAuthTestIT {
       saslTest(COORDINATOR_NODE_KRB, JOINING_NODE_KRB, MECH_KRB);
    }
    
+   @Test
+   @WithRunningServer(@RunningServer(name = COORDINATOR_NODE_MD5))
+   public void testNodeAuthorization() throws Exception {
+      authorizationTest(COORDINATOR_NODE_MD5, ANOTHER_JOINING_NODE_MD5, MECH_MD5);
+   }
+
    public void saslTest(String coordinatorNode, String joiningNode, String mech) throws Exception {
       try {
          controller.start(joiningNode);
@@ -101,6 +108,21 @@ public class SaslAuthTestIT {
 
          mcFriend.set("key1", "value1");
          assertEquals("Could not read replicated pair key1/value1", "value1", mcCoordinator.get("key1"));
+      } finally {
+         controller.stop(joiningNode);
+      }
+   }
+
+   public void authorizationTest(String coordinatorNode, String joiningNode, String mech) throws Exception {
+      try {
+         controller.start(joiningNode);
+	 
+	 RemoteInfinispanMBeans coordinator = RemoteInfinispanMBeans.create(servers, coordinatorNode,
+               "memcachedCache", "clustered");
+
+         //check the cluster was NOT formed
+         assertEquals(1, coordinator.manager.getClusterSize());
+
       } finally {
          controller.stop(joiningNode);
       }

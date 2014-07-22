@@ -26,6 +26,7 @@ public abstract class AbstractNodeAuthentication {
 
    protected static final String COORDINATOR_NODE = "node0";
    protected static final String COORDINATOR_JGROUSP_CONFIG_MD5 = "jgroups-udp-sasl-md5-node0.xml";
+   protected static final String COORDINATOR_JGROUSP_CONFIG_MD5_USER = "jgroups-udp-sasl-md5-user-node0.xml";
    protected static final String JOINING_NODE_JGROUSP_CONFIG_MD5 = "jgroups-udp-sasl-md5-node1.xml";
    protected static final String COORDINATOR_JGROUSP_CONFIG_KRB = "jgroups-udp-sasl-krb-node0.xml";
    protected static final String JOINING_NODE_JGROUSP_CONFIG_KRB = "jgroups-udp-sasl-krb-node1.xml";
@@ -65,7 +66,6 @@ public abstract class AbstractNodeAuthentication {
       return replicatedCache;
    }
 
-   
    @Test
    @InSequence(1)
    public void startNodes() throws Exception {
@@ -76,7 +76,7 @@ public abstract class AbstractNodeAuthentication {
       deployer.deploy(COORDINATOR_NODE);
       deployer.deploy(getJoiningNodeName());
    }
-   
+
    @Test
    @OperateOnDeployment(COORDINATOR_NODE)
    @InSequence(2)
@@ -104,5 +104,5 @@ public abstract class AbstractNodeAuthentication {
       controller.stop(COORDINATOR_NODE);
       assertFalse(controller.isStarted(COORDINATOR_NODE));
    }
-   
+
 }
