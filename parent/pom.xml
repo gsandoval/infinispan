@@ -1477,6 +1477,7 @@
                   <infinispan.test.jgroups.protocol>${infinispan.test.jgroups.protocol}</infinispan.test.jgroups.protocol>
                   <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
                   <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+                  <jgroups.uuid_cache.max_age>1200000</jgroups.uuid_cache.max_age>
                   <infinispan.unsafe.allow_jdk8_chm>true</infinispan.unsafe.allow_jdk8_chm>
                   <log4j.configuration>${log4j.configuration}</log4j.configuration>
                   <build.directory>${project.build.directory}</build.directory>
