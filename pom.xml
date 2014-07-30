@@ -5,7 +5,7 @@
    <parent>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-parent</artifactId>
-      <version>6.1.0-redhat-SNAPSHOT</version>
+      <version>6.1.1-redhat-SNAPSHOT</version>
       <relativePath>parent/pom.xml</relativePath>
    </parent>
 
@@ -82,7 +82,7 @@
                               <artifactId>infinispan-tools</artifactId>
                               <version>${project.version}</version>
                            </docletArtifact>
-                           <doctitle>JBoss Data Grid 6.3.0 API</doctitle>
+                           <doctitle>JBoss Data Grid 6.3.1 API</doctitle>
                            <quiet>true</quiet>
                            <!-- In case anyone needs to trace javadoc issues
                            <additionalJOption>-J-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</additionalJOption>
