@@ -23,11 +23,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:transactions:1.2"
-            xmlns="urn:jboss:domain:transactions:1.2"
+            targetNamespace="urn:jboss:domain:transactions:1.4"
+            xmlns="urn:jboss:domain:transactions:1.4"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="1.2">
+            version="1.4">
 
     <!-- The transaction subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
@@ -40,14 +40,19 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:all>
-            <xs:element name="core-environment" type="core-environment"/>
-            <xs:element name="recovery-environment" type="recovery-environment"/>
-            <xs:element name="coordinator-environment" type="coordinator-environment" minOccurs="0"/>
-            <xs:element name="object-store" type="object-store" minOccurs="0"/>
+        <xs:sequence>
+            <xs:element name="core-environment" type="core-environment" maxOccurs="1"/>
+            <xs:element name="recovery-environment" type="recovery-environment" maxOccurs="1"/>
+            <xs:element name="coordinator-environment" type="coordinator-environment" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="object-store" type="object-store" minOccurs="0" maxOccurs="1"/>
             <xs:element name="jts" type="jts-Type" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="use-hornetq-store" type="use-hornetq-store-Type" minOccurs="0" maxOccurs="1" />
-        </xs:all>
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element name="use-hornetq-store" type="use-hornetq-store-Type" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="jdbc-store" type="jdbc-store-Type" minOccurs="0" maxOccurs="1"/>
+            </xs:choice>
+        </xs:sequence>
+
+
     </xs:complexType>
 
     <xs:complexType name="recovery-environment">
@@ -180,13 +185,82 @@
     </xs:complexType>
 
     <xs:complexType name="use-hornetq-store-Type">
+        <xs:annotation>
+            <xs:documentation>
+            <![CDATA[
+                The flag to enable the hornetq transaction log store.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="enable-async-io" type="xs:boolean" use="optional" default="false">
             <xs:annotation>
                 <xs:documentation>
-                <![CDATA[
-                    The flag to enable the hornetq transaction log store.
-                ]]>
+                    <![CDATA[
+                        Enable AsyncIO for the hornetq transaction log store.
+                        ]]>
                 </xs:documentation>
             </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
+
+    <xs:complexType name="jdbc-store-Type">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                        The presence of this tag enable the jdbc transaction log store.
+                    ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="action" type="jdbc-store-settings-Type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                             Configure jdbc store for default action store. If not present defaults are used.
+                                ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="communication" type="jdbc-store-settings-Type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                            Configure jdbc store for communication store. If not present defaults are used.
+                                ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="state" type="jdbc-store-settings-Type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                           Configure jdbc store for state store. If not present defaults are used.
+                                ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="datasource-jndi-name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                        Configure datasource jndi used to connect for jdbc store
+                        ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="jdbc-store-settings-Type">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                            Settings for jdbc store
+                        ]]>
+                </xs:documentation>
+            </xs:annotation>
+            <xs:attribute name="table-prefix" type="xs:string" use="optional" />
+            <xs:attribute name="drop-table" type="xs:boolean" use="optional" default="false"/>
+        </xs:complexType>
 
 </xs:schema>
