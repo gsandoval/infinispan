@@ -46,7 +46,7 @@
          <artifactId>jboss-logging</artifactId>
       </dependency>
 
-      <dependency>
+     <dependency>
          <groupId>org.jboss.naming</groupId>
          <artifactId>jnp-client</artifactId>
          <scope>test</scope>

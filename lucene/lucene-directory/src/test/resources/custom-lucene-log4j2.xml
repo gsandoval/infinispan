@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration status="debug" name="CommandLineConfig" packages="org.infinispan.util.logging.log4j">
+  <properties>
+    <property name="infinispan.module-name"></property>
+    <property name="infinispan.log.path">.</property>
+  </properties>
+
+  <appenders>
+    <Console name="STDOUT">
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p (%t) [%c{1}] %m%n"/>
+    </Console>
+    <File name="File" fileName="${infinispan.log.path}/infinispan-${infinispan.module-name}.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p (%t) [%c{1}] %m%n"/>
+    </File>
+    <Async name="AsyncFile">
+      <AppenderRef ref="File"/>
+    </Async>
+  </appenders>
+
+  <loggers>
+    <logger name="org.infinispan.lucene" level="TRACE"/>
+    <logger name="org.infinispan" level="DEBUG"/>
+    <logger name="org.infinispan.marshall" level="DEBUG"/>
+    <logger name="org.infinispan.factories" level="DEBUG"/>
+    <logger name="org.infinispan.client.hotrod.impl.transport" level="DEBUG"/>
+    <logger name="com.mchange" level="WARN"/>
+    <logger name="org.jgroups" level="DEBUG"/>
+
+    <root level="DEBUG">
+      <appender-ref ref="STDOUT" level="WARN"/>
+      <appender-ref ref="AsyncFile"/>
+    </root>
+  </loggers>
+</configuration>

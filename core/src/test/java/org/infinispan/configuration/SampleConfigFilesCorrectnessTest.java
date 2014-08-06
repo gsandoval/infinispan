@@ -1,6 +1,5 @@
 package org.infinispan.configuration;
 
-import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
@@ -45,7 +44,7 @@ public class SampleConfigFilesCorrectnessTest {
       Logger log4jLogger = Logger.getRootLogger();
       log4jLogger.setLevel(oldLevel);
       log4jLogger.removeAppender(appender);
-      appender.close();
+      appender.stop();
    }
 
 
@@ -95,7 +94,8 @@ public class SampleConfigFilesCorrectnessTest {
       return file;
    }
 
-   private static class InMemoryAppender extends AppenderSkeleton {
+   @Plugin(name = "InMemory", category = "Core", elementType = "appender", printObject = false)
+   private static class InMemoryAppender extends AbstractAppender {
       String[] TOLERABLE_WARNINGS =
             {
                   "Falling back to DummyTransactionManager from Infinispan",
@@ -120,7 +120,6 @@ public class SampleConfigFilesCorrectnessTest {
        */
       private Thread loggerThread = Thread.currentThread();
 
-      @Override
       protected void append(LoggingEvent event) {
          if (event.getLevel().equals(Level.WARN) && isExpectedThread()) {
             boolean skipPrinting = false;

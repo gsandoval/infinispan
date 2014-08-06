@@ -148,7 +148,7 @@
       <version.junit>4.11</version.junit>
       <version.leveldb>0.7</version.leveldb>
       <version.leveldbjni>1.7</version.leveldbjni>
-      <version.log4j>1.2.16</version.log4j>
+      <version.log4j>2.0</version.log4j>
       <version.lucene>4.10.4</version.lucene>
       <version.mc4j>1.2.6</version.mc4j>
       <version.mockito>1.9.5</version.mockito>
@@ -423,8 +423,28 @@
             <version>${version.jgoodies.forms}</version>
          </dependency>
          <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${version.log4j}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${version.log4j}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${version.log4j}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.logging.log4j.adapters</groupId>
+            <artifactId>log4j-jcl</artifactId>
+            <version>${version.log4j}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.logging.log4j.adapters</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
             <version>${version.log4j}</version>
          </dependency>
          <dependency>
@@ -675,13 +695,7 @@
             <version>${version.slf4j}</version>
             <scope>test</scope>
          </dependency>
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${version.slf4j}</version>
-            <scope>test</scope>
-         </dependency>
-         
+
          <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -988,17 +1002,17 @@
       </dependencies>
    </dependencyManagement>
    <dependencies>
-      
+     <!-- used to serialize non-serializable objects for a dummy marshaller -->
       <dependency>
          <groupId>com.thoughtworks.xstream</groupId>
          <artifactId>xstream</artifactId>
          <scope>test</scope>
       </dependency>
-      <dependency>
-         <groupId>log4j</groupId>
-         <artifactId>log4j</artifactId>
-         <optional>true</optional>
-      </dependency>
+     <dependency>
+       <groupId>org.apache.logging.log4j</groupId>
+       <artifactId>log4j-core</artifactId>
+       <scope>test</scope>
+     </dependency>
       <dependency>
          <groupId>net.jcip</groupId>
          <artifactId>jcip-annotations</artifactId>
