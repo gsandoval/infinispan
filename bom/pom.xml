@@ -68,7 +68,7 @@
       <version.jansi>1.9.redhat-3</version.jansi>
       <version.jboss.marshalling>1.4.5.Final-redhat-1</version.jboss.marshalling>
       <version.jboss.logging>3.1.2.GA-redhat-1</version.jboss.logging>
-      <version.jgroups>3.4.4.Final-redhat-5</version.jgroups>
+      <version.jgroups>3.4.5.Final-redhat-1</version.jgroups>
       <version.json>20090211</version.json>
       <version.jta>1.0.1.Final-redhat-2</version.jta>
       <version.leveldbjni>1.13-redhat.002</version.leveldbjni>
