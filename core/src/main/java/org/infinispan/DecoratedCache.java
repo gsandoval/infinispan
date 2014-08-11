@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
+import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.iteration.EntryIterable;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.KeyFilter;
@@ -498,4 +500,8 @@ public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> 
       return cacheImplementation.getCacheEntry(key, flags, classLoader.get());
    }
 
+   @Override
+   public EntryIterable<K, V> filterEntries(KeyValueFilter<? super K, ? super V> filter) {
+      return cacheImplementation.filterEntries(filter, flags);
+   }
 }

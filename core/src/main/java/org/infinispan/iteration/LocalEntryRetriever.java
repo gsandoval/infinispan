@@ -9,6 +9,7 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.context.Flag;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
@@ -102,7 +103,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    @Override
    public <C> void startRetrievingValues(UUID identifier, Address origin, Set<Integer> segments,
                                             KeyValueFilter<? super K, ? super V> filter,
-                                            Converter<? super K, ? super V, C> converter) {
+                                            Converter<? super K, ? super V, C> converter, Set<Flag> flags) {
       throw new UnsupportedOperationException();
    }
 
@@ -155,9 +156,14 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       }
    }
 
+   protected boolean shouldUseLoader(Set<Flag> flags) {
+      return flags == null || !flags.contains(Flag.SKIP_CACHE_LOAD);
+   }
+
    @Override
    public <C> CloseableIterator<Map.Entry<K, C>> retrieveEntries(final KeyValueFilter<? super K, ? super V> filter,
                                                                  final Converter<? super K, ? super V, ? extends C> converter,
+                                                                 final Set<Flag> flags,
                                                                  final SegmentListener listener) {
       wireFilterAndConverterDependencies(filter, converter);
       final Itr<K, C> iterator = new Itr<K, C>(batchSize);
@@ -198,7 +204,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                         }
                      }
                   }
-                  if (persistenceManager.size() > 0) {
+                  if (shouldUseLoader(flags) && persistenceManager.size() > 0) {
                      if (passivationEnabled) {
                         listener = new PassivationListener<K, V>();
                         cache.addListener(listener);

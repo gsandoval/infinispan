@@ -1,10 +1,12 @@
 package org.infinispan.iteration;
 
 import org.infinispan.commons.util.CloseableIterable;
+import org.infinispan.context.Flag;
 import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.iteration.EntryIterable;
 
+import java.util.EnumSet;
 import java.util.Map;
 
 /**
@@ -14,17 +16,13 @@ import java.util.Map;
  * @since 7.0
  */
 public class EntryIterableImpl<K, V> extends TrackingEntryIterable<K, V, V> implements EntryIterable<K, V> {
-   public EntryIterableImpl(EntryRetriever<K, V> entryRetriver, KeyValueFilter<? super K, ? super V> filter) {
-      this(entryRetriver, filter, null);
-   }
-
    public EntryIterableImpl(EntryRetriever<K, V> entryRetriver, KeyValueFilter<? super K, ? super V> filter,
-                            Converter<? super K, ? super V, ? extends V> converter) {
-      super(entryRetriver, filter, converter);
+                            EnumSet<Flag> flags) {
+      super(entryRetriver, filter, null, flags);
    }
 
    @Override
    public <C> CloseableIterable<Map.Entry<K, C>> converter(Converter<? super K, ? super V, ? extends C> converter) {
-      return new TrackingEntryIterable<K, V, C>(entryRetriever, filter, converter);
+      return new TrackingEntryIterable<K, V, C>(entryRetriever, filter, converter, flags);
    }
 }

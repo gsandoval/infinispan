@@ -1,6 +1,7 @@
 package org.infinispan.iteration;
 
 import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.context.Flag;
 import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.remoting.transport.Address;
@@ -24,11 +25,15 @@ public interface EntryRetriever<K, V> {
     * @param segments The segments this node wants
     * @param filter The filter to be applied to determine if a value should be used
     * @param converter The converter to run on the values retrieved before returning
+    * @param flags An optional set of flags to modify behavior.  For example {@link Flag#CACHE_MODE_LOCAL} will prevent
+    *              the retriever from retrieving remote values and {@link Flag#SKIP_CACHE_LOAD} will prevent the
+    *              retriever from getting values from the configured loader if present.
     * @param <C> The resulting type of the Converter
     */
    public <C> void startRetrievingValues(UUID identifier, Address origin, Set<Integer> segments,
                                         KeyValueFilter<? super K, ? super V> filter,
-                                        Converter<? super K, ? super V, C> converter);
+                                        Converter<? super K, ? super V, C> converter,
+                                        Set<Flag> flags);
 
    /**
     * This method is invoked on the local node who started the iteration process for each batch of values.  When
@@ -50,6 +55,9 @@ public interface EntryRetriever<K, V> {
     * @param filter An optional filter that will be ran on each key/value to determine if it should be returned.
     * @param converter An optional converter that will be ran on each key/value that will be returned to transform
     *                  the value to a different value if desired
+    * @param flags An optional set of flags to modify behavior.  For example {@link Flag#CACHE_MODE_LOCAL} will prevent
+    *              the retriever from retrieving remote values and {@link Flag#SKIP_CACHE_LOAD} will prevent the
+    *              retriever from getting values from the configured loader if present.
     * @param listener An optional segment listener that can be used to tell the invoker when segments and the iteration
     *                 process is completed
     * @param <C> The type of the resulting values from the converter
@@ -57,7 +65,7 @@ public interface EntryRetriever<K, V> {
     */
    public <C> CloseableIterator<Map.Entry<K, C>> retrieveEntries(KeyValueFilter<? super K, ? super V> filter,
                                                        Converter<? super K, ? super V, ? extends C> converter,
-                                                       SegmentListener listener);
+                                                       Set<Flag> flags, SegmentListener listener);
 
    /**
     * This interface describes the call back methods that are invoked when an iteration process completes segments
