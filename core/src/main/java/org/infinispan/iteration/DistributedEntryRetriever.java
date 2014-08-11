@@ -782,13 +782,13 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
    private <C> void processData(final UUID identifier, Address origin, Set<Integer> completedSegments, Set<Integer> inDoubtSegments,
                             Collection<Map.Entry<K, C>> entries) {
       final IterationStatus<K, V, C> status = (IterationStatus<K, V, C>) iteratorDetails.get(identifier);
-      final AtomicReferenceArray<Set<K>> referenceArray = status.processedKeys;
-      Itr<K, C> itr = status.ongoingIterator;
-      if (log.isTraceEnabled()) {
-         log.tracef("Processing data for identifier %s completedSegments: %s inDoubtSegments: %s entryCount: %s", identifier,
-                    completedSegments, inDoubtSegments, entries.size());
-      }
-      if (referenceArray != null && itr != null) {
+      if (status != null) {
+         final AtomicReferenceArray<Set<K>> referenceArray = status.processedKeys;
+         Itr<K, C> itr = status.ongoingIterator;
+         if (log.isTraceEnabled()) {
+            log.tracef("Processing data for identifier %s completedSegments: %s inDoubtSegments: %s entryCount: %s", identifier,
+                       completedSegments, inDoubtSegments, entries.size());
+         }
          // Normally we shouldn't have duplicates, but rehash can cause that
          Collection<Map.Entry<K, C>> nonDuplicateEntries = new ArrayList<Map.Entry<K, C>>(entries.size());
          // We need to keep track of what we have seen in case if they become in doubt
