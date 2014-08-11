@@ -6,6 +6,7 @@ import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.metadata.InternalMetadataImpl;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.logging.Log;
@@ -76,5 +77,20 @@ public class PersistenceUtil {
 
    public static InternalMetadata internalMetadata(InternalCacheValue icv) {
       return icv.getMetadata() == null ? null : new InternalMetadataImpl(icv.getMetadata(), icv.getCreated(), icv.getLastUsed());
+   }
+
+   public static InternalCacheEntry convert(MarshalledEntry loaded, InternalEntryFactory factory) {
+      InternalMetadata metadata = loaded.getMetadata();
+      if (metadata != null) {
+         Metadata actual = metadata instanceof InternalMetadataImpl ? ((InternalMetadataImpl) metadata).actual() :
+               metadata;
+         //noinspection unchecked
+         return factory.create(loaded.getKey(), loaded.getValue(), actual, metadata.created(), metadata.lifespan(),
+                               metadata.lastUsed(), metadata.maxIdle());
+      } else {
+         //metadata is null!
+         //noinspection unchecked
+         return factory.create(loaded.getKey(), loaded.getValue(), (Metadata) null);
+      }
    }
 }
