@@ -325,7 +325,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       @Override
       public boolean hasNext() {
          boolean hasNext = !queue.isEmpty();
-         if (!hasNext && !completed) {
+         if (!hasNext) {
             boolean interrupted = false;
             long targetTime = timeService.expectedEndTime(timeout, unit);
             nextLock.lock();
