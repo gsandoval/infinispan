@@ -352,13 +352,15 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                      PassivationListener<K, V> listener = null;
                      try {
                         for (InternalCacheEntry entry : dataContainer) {
-                           K key = (K) entry.getKey();
+                           InternalCacheEntry clone = entryFactory.create(unwrapMarshalledvalue(entry.getKey()),
+                                                                          unwrapMarshalledvalue(entry.getValue()), entry);
+                           K key = (K) clone.getKey();
                            if (filter != null) {
-                              if (!filter.accept(key, (V) entry.getValue(), entry.getMetadata())) {
+                              if (!filter.accept(key, (V) clone.getValue(), entry.getMetadata())) {
                                  continue;
                               }
                            }
-                           action.apply(key, entry);
+                           action.apply(key, clone);
                         }
                         if (DistributedEntryRetriever.super.shouldUseLoader(flags) &&
                               persistenceManager.getStoresAsString().size() > 0) {
