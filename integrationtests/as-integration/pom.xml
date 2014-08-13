@@ -167,7 +167,15 @@
                             <version>${version.jboss.as}</version>
                             <type>zip</type>
                            <overWrite>false</overWrite>
-                           <outputDirectory>${project.build.directory}</outputDirectory>
+                           <outputDirectory>${project.build.directory}/node1</outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.jboss.as</groupId>
+                           <artifactId>jboss-as-dist</artifactId>
+                           <version>${version.jboss.as}</version>
+                           <type>zip</type>
+                           <overWrite>false</overWrite>
+                           <outputDirectory>${project.build.directory}/node2</outputDirectory>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.infinispan</groupId>
@@ -175,7 +183,15 @@
                            <version>${project.version}</version>
                            <type>zip</type>
                            <overWrite>false</overWrite>
-                           <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
+                           <outputDirectory>${project.build.directory}/node1/jboss-eap-6.2</outputDirectory>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.infinispan</groupId>
+                           <artifactId>infinispan-as-modules-library</artifactId>
+                           <version>${project.version}</version>
+                           <type>zip</type>
+                           <overWrite>false</overWrite>
+                           <outputDirectory>${project.build.directory}/node2/jboss-eap-6.2</outputDirectory>
                         </artifactItem>
                      </artifactItems>
                   </configuration>
@@ -189,13 +205,29 @@
             <executions>
                
                <execution>
-                  <id>configure-as-node</id>
+                  <id>configure-as-node1</id>
                   <phase>pre-integration-test</phase>
                   <goals>
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
+                     <outputDirectory>${project.build.directory}/node1/jboss-eap-6.2</outputDirectory>
+                     <overwrite>true</overwrite>
+                     <resources>
+                        <resource>
+                           <directory>${basedir}/src/as-config</directory>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>configure-as-node2</id>
+                  <phase>pre-integration-test</phase>
+                  <goals>
+                     <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${project.build.directory}/node2/jboss-eap-6.2</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>
