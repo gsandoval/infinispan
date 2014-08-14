@@ -6,6 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -19,10 +20,10 @@ import org.infinispan.manager.EmbeddedCacheManager;
 public class QueryConfiguration {
 
    @Produces @ApplicationScoped
-   public Cache<String,Book> defaultClusteredCacheManager() throws IOException {
+   public AdvancedCache<String,Book> defaultClusteredCacheManager() throws IOException {
       DefaultCacheManager cacheManager = new DefaultCacheManager("dynamic-indexing-distribution.xml");
       Cache<String, Book> cache = cacheManager.getCache();
-      return cache;
+      return cache.getAdvancedCache();
    }
 
    public void killCacheManager(@Disposes Cache<String, Book> cache) {

@@ -8,6 +8,7 @@ import javax.inject.Named;
 
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.query.CacheQuery;
@@ -19,14 +20,14 @@ import org.infinispan.query.SearchManager;
 public class GridService {
 
    @Inject
-   private Cache<String,Book> bookshelf;
+   private AdvancedCache<String,Book> bookshelf;
 
    public void store(String isbn, Book book, boolean index) {
       if (index) {
          bookshelf.put(isbn, book);
       }
       else {
-         bookshelf.getAdvancedCache().withFlags(Flag.SKIP_INDEXING).put(isbn, book);
+         bookshelf.withFlags(Flag.SKIP_INDEXING).put(isbn, book);
       }
    }
 
