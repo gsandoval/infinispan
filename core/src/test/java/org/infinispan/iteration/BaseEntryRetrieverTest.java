@@ -7,8 +7,11 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.filter.CollectionKeyFilter;
+import org.infinispan.filter.CompositeKeyValueFilterConverter;
 import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyFilter;
 import org.infinispan.filter.KeyFilterAsKeyValueFilter;
+import org.infinispan.filter.KeyValueFilterConverter;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.test.MultipleCacheManagersTest;
@@ -136,6 +139,28 @@ public abstract class BaseEntryRetrieverTest extends MultipleCacheManagersTest {
                   Collections.singleton(excludedEntry.getKey()))));
 
       Map<MagicKey, String> results = mapFromIterable(iterable.converter(new StringTruncator(2, 5)));
+
+      assertEquals(values.size(), results.size());
+      for (Map.Entry<Object, String> entry : values.entrySet()) {
+         assertEquals(entry.getValue().substring(2, 7), results.get(entry.getKey()));
+      }
+   }
+
+   @Test
+   public void testFilterAndConverterCombined() {
+      Map<Object, String> values = putValuesInCache();
+      Iterator<Map.Entry<Object, String>> iter = values.entrySet().iterator();
+      Map.Entry<Object, String> excludedEntry = iter.next();
+      // Remove it so comparison below will be correct
+      iter.remove();
+
+
+      Cache<MagicKey, String> cache = cache(0, CACHE_NAME);
+      KeyValueFilterConverter<MagicKey, String, String> filterConverter = new CompositeKeyValueFilterConverter<MagicKey, String, String>(
+            new KeyFilterAsKeyValueFilter<Object, String>(new CollectionKeyFilter<Object>(Collections.singleton(excludedEntry.getKey()))),
+            new StringTruncator(2, 5));
+      EntryIterable<MagicKey, String> iterable = cache.getAdvancedCache().filterEntries(filterConverter);
+      Map<MagicKey, String> results = mapFromIterable(iterable);
 
       assertEquals(values.size(), results.size());
       for (Map.Entry<Object, String> entry : values.entrySet()) {
