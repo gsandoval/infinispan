@@ -14,6 +14,7 @@ import org.infinispan.remoting.RemoteException;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
+import org.infinispan.topology.CacheTopology;
 import org.infinispan.transaction.LocalTransaction;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.transaction.xa.recovery.RecoveryAwareRemoteTransaction;
@@ -1070,4 +1071,16 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Issue when retrieving transactions from %s, response was %s", id = 302)
    void unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
+
+   @LogMessage(level = INFO)
+   @Message(value = "Rebalancing enabled", id = 308)
+   void rebalancingEnabled();
+
+   @LogMessage(level = INFO)
+   @Message(value = "Rebalancing suspended", id = 309)
+   void rebalancingSuspended();
+
+   @LogMessage(level = INFO)
+   @Message(value = "Starting cluster-wide rebalance for cache %s, topology %s", id = 310)
+   void startRebalance(String cacheName, CacheTopology cacheTopology);
 }
