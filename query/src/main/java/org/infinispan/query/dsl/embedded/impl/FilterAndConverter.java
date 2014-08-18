@@ -5,8 +5,6 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.filter.AbstractKeyValueFilterConverter;
-import org.infinispan.filter.Converter;
-import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.objectfilter.Matcher;
 import org.infinispan.objectfilter.ObjectFilter;
