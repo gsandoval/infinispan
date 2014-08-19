@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * DefaultDataContainer is both eviction and non-eviction based data container.
@@ -185,7 +186,7 @@ public class DefaultDataContainer implements DataContainer {
 
    @Override
    public InternalCacheEntry remove(Object k) {
-      InternalCacheEntry e = entries.remove(k);
+      InternalCacheEntry e = extendedMap.removeAndActivate(k);
       return e == null || (e.canExpire() && e.isExpired(timeService.wallClockTime())) ? null : e;
    }
 
@@ -404,6 +405,8 @@ public class DefaultDataContainer implements DataContainer {
       void compute(Object key, ComputeAction action);
 
       void putAndActivate(InternalCacheEntry newEntry);
+
+      InternalCacheEntry removeAndActivate(Object key);
    }
 
    private class EquivalentConcurrentExtendedMap implements ExtendedMap {
@@ -457,6 +460,22 @@ public class DefaultDataContainer implements DataContainer {
                   }
                });
       }
+
+      @Override
+      public InternalCacheEntry removeAndActivate(Object key) {
+         final AtomicReference<InternalCacheEntry> reference = new AtomicReference<InternalCacheEntry>(null);
+         ((EquivalentConcurrentHashMapV8<Object, InternalCacheEntry>) entries)
+               .compute(key, new EquivalentConcurrentHashMapV8.BiFun<Object, InternalCacheEntry, InternalCacheEntry>() {
+                  @Override
+                  public InternalCacheEntry apply(Object key, InternalCacheEntry entry) {
+                     //always try to activate
+                     pm.activate(key);
+                     reference.set(entry);
+                     return null;
+                  }
+               });
+         return reference.get();
+      }
    }
 
    private class BoundedConcurrentExtendedMap implements ExtendedMap {
@@ -492,6 +511,21 @@ public class DefaultDataContainer implements DataContainer {
       public void putAndActivate(InternalCacheEntry newEntry) {
          //put already activate the entry if it is new.
          entries.put(newEntry.getKey(), newEntry);
+      }
+
+      @Override
+      public InternalCacheEntry removeAndActivate(Object key) {
+         final BoundedConcurrentHashMap<Object, InternalCacheEntry> boundedMap =
+               ((BoundedConcurrentHashMap<Object, InternalCacheEntry>) entries);
+         boundedMap.lock(key);
+         try {
+            InternalCacheEntry oldEntry = boundedMap.remove(key);
+            //always try to activate
+            pm.activate(key);
+            return oldEntry;
+         } finally {
+            boundedMap.unlock(key);
+         }
       }
    }
 }
