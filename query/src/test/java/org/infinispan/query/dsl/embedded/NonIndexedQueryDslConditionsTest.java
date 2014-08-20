@@ -4,10 +4,15 @@ import org.hibernate.hql.ParsingException;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
+import org.infinispan.query.dsl.embedded.sample_domain_model.User;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.infinispan.transaction.TransactionMode;
 import org.testng.annotations.Test;
+
+import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test for query conditions (filtering) on cache without indexing. Exercises the whole query DSL on the sample domain
@@ -47,5 +52,17 @@ public class NonIndexedQueryDslConditionsTest extends QueryDslConditionsTest {
    @Override
    public void testNullOnIntegerField() throws Exception {
       super.testNullOnIntegerField();
+   }
+
+   public void testAnd5() throws Exception {
+      QueryFactory qf = getQueryFactory();
+
+      Query q =  qf.from(User.class)
+            .having("id").lt(1000)
+            .and().having("age").lt(1000)
+            .toBuilder().build();
+
+      List<User> list = q.list();
+      assertEquals(1, list.size());
    }
 }
