@@ -49,6 +49,7 @@ public class CompressedFileAppender extends FileAppender {
 
    private void closeCompressor() {
       try {
+         gzos.flush();
          gzos.close();
       } catch (IOException e) {
          throw new RuntimeException("Unable to finish gzipped output stream");

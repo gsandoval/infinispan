@@ -112,7 +112,10 @@ public class CacheManagerNotifierImpl extends AbstractListenerImpl<Event, Listen
          e.setCacheName(cacheName);
          e.setCacheManager(cacheManager);
          e.setType(Event.Type.CACHE_STARTED);
-         for (ListenerInvocation listener : cacheStartedListeners) listener.invoke(e);
+         for (ListenerInvocation listener : cacheStartedListeners) {
+            log.tracef("Notifying listener %s that cache %s has started", listener, cacheName);
+            listener.invoke(e);
+         }
       }
    }
 

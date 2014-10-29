@@ -12,6 +12,7 @@ import org.infinispan.notifications.Listener;
 import org.infinispan.security.Security;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
 
 import javax.security.auth.Subject;
 import javax.transaction.Transaction;
@@ -39,6 +40,7 @@ import java.util.concurrent.ExecutorService;
  * @author William Burns
  */
 public abstract class AbstractListenerImpl<T, L extends ListenerInvocation<T>> {
+   private static final Log log = LogFactory.getLog(AbstractListenerImpl.class);
 
    protected final Map<Class<? extends Annotation>, List<L>> listenersMap = new HashMap<>(16, 0.99f);
 
@@ -168,6 +170,7 @@ public abstract class AbstractListenerImpl<T, L extends ListenerInvocation<T>> {
     * @param builder The builder to use to build the invocation
     */
    protected boolean validateAndAddListenerInvocation(Object listener, AbstractInvocationBuilder builder) {
+      log.tracef("Adding listener %s", listener);
       Listener l = testListenerClassValidity(listener.getClass());
       boolean foundMethods = false;
       builder.setTarget(listener);
@@ -198,7 +201,8 @@ public abstract class AbstractListenerImpl<T, L extends ListenerInvocation<T>> {
       return foundMethods;
    }
 
-   private void addListenerInvocation(Class<? extends Annotation> annotation, L li) {
+   private void  addListenerInvocation(Class<? extends Annotation> annotation, L li) {
+      log.tracef("Adding listener invocation %s %s", annotation.getName(), li);
       List<L> result = getListenerCollectionForAnnotation(annotation);
       result.add(li);
    }
@@ -309,6 +313,14 @@ public abstract class AbstractListenerImpl<T, L extends ListenerInvocation<T>> {
       @Override
       public Object getTarget() {
          return target;
+      }
+
+      @Override
+      public String toString() {
+         return "ListenerInvocationImpl{" +
+               method + "@" + target +
+               ", sync=" + sync +
+               '}';
       }
    }
 
