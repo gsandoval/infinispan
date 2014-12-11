@@ -16,6 +16,7 @@ import org.infinispan.transaction.impl.RemoteTransaction;
 import org.infinispan.transaction.impl.TransactionTable;
 import org.infinispan.util.ControlledConsistentHashFactory;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
@@ -48,6 +49,11 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
    private StateSequencer sequencer;
    private ControlledConsistentHashFactory consistentHashFactory;
 
+   @DataProvider(name = "newPrimaryWasBackup")
+   public static Object[][] provideNewPrimaryWasBackup() {
+      return new Object[][]{{false}, {true}};
+   }
+
    @AfterMethod(alwaysRun = true)
    public void printSequencerState() {
       log.debugf("Sequencer state: %s", sequencer);
@@ -63,6 +69,7 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       waitForClusterToForm();
    }
 
+   @Test(dataProvider = "newPrimaryWasBackup")
    protected ConfigurationBuilder getConfigurationBuilder() {
       consistentHashFactory = new ControlledConsistentHashFactory(0, 1);
       ConfigurationBuilder c = new ConfigurationBuilder();
@@ -73,7 +80,8 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       return c;
    }
 
-   public void testPutStartedBeforeRebalance() throws Exception {
+   @Test(dataProvider = "newPrimaryWasBackup")
+   public void testPutStartedBeforeRebalance(boolean newPrimaryWasBackup) throws Exception {
       sequencer = new StateSequencer();
       sequencer.logicalThread("tx", "tx:perform_op", "tx:check_locks", "tx:before_commit", "tx:after_commit");
       sequencer.logicalThread("rebalance", "rebalance:before_get_tx", "rebalance:after_get_tx",
@@ -82,14 +90,15 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
             "rebalance:before_confirm", "rebalance:end", "tx:before_commit");
 
       startTxWithPut();
-      startRebalance();
-      checkLocksBeforeCommit(false);
+      startRebalance(newPrimaryWasBackup);
+      checkLocksBeforeCommit(newPrimaryWasBackup, false);
       waitRebalanceEnd();
       endTx();
       checkLocksAfterCommit();
    }
 
-   public void testLockStartedBeforeRebalance() throws Exception {
+   @Test(dataProvider = "newPrimaryWasBackup")
+   public void testLockStartedBeforeRebalance(boolean newPrimaryWasBackup) throws Exception {
       sequencer = new StateSequencer();
       sequencer.logicalThread("tx", "tx:perform_op", "tx:check_locks", "tx:before_commit", "tx:after_commit");
       sequencer.logicalThread("rebalance", "rebalance:before_get_tx", "rebalance:after_get_tx",
@@ -98,14 +107,15 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
             "rebalance:before_confirm", "rebalance:end", "tx:before_commit");
 
       startTxWithLock();
-      startRebalance();
-      checkLocksBeforeCommit(false);
+      startRebalance(newPrimaryWasBackup);
+      checkLocksBeforeCommit(newPrimaryWasBackup, false);
       waitRebalanceEnd();
       endTx();
       checkLocksAfterCommit();
    }
 
-   public void testPutStartedDuringRebalance() throws Exception {
+   @Test(dataProvider = "newPrimaryWasBackup")
+   public void testPutStartedDuringRebalance(boolean newPrimaryWasBackup) throws Exception {
       sequencer = new StateSequencer();
       sequencer.logicalThread("tx", "tx:perform_op", "tx:check_locks", "tx:before_commit",
             "tx:after_commit");
@@ -114,15 +124,16 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       sequencer.order("rebalance:after_get_tx", "tx:perform_op", "tx:check_locks",
             "rebalance:before_confirm", "rebalance:end", "tx:before_commit");
 
-      startRebalance();
+      startRebalance(newPrimaryWasBackup);
       startTxWithPut();
-      checkLocksBeforeCommit(true);
+      checkLocksBeforeCommit(newPrimaryWasBackup, true);
       waitRebalanceEnd();
       endTx();
       checkLocksAfterCommit();
    }
 
-   public void testLockStartedDuringRebalance() throws Exception {
+   @Test(dataProvider = "newPrimaryWasBackup")
+   public void testLockStartedDuringRebalance(boolean newPrimaryWasBackup) throws Exception {
       sequencer = new StateSequencer();
       sequencer.logicalThread("tx", "tx:perform_op", "tx:check_locks", "tx:before_commit", "tx:after_commit");
       sequencer.logicalThread("rebalance", "rebalance:before_get_tx", "rebalance:after_get_tx",
@@ -130,9 +141,9 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       sequencer.order("rebalance:after_get_tx", "tx:perform_op",  "tx:check_locks",
             "rebalance:before_confirm", "rebalance:end", "tx:before_commit");
 
-      startRebalance();
+      startRebalance(newPrimaryWasBackup);
       startTxWithLock();
-      checkLocksBeforeCommit(true);
+      checkLocksBeforeCommit(newPrimaryWasBackup, true);
       waitRebalanceEnd();
       endTx();
       checkLocksAfterCommit();
@@ -152,7 +163,7 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       sequencer.exit("tx:perform_op");
    }
 
-   private void startRebalance() throws Exception {
+   private void startRebalance(boolean newPrimaryWasBackup) throws Exception {
       InvocationMatcher rebalanceCompletedMatcher = matchMethodCall("handleRebalanceCompleted")
             .withParam(1, address(2)).build();
       advanceOnGlobalComponentMethod(sequencer, manager(0), ClusterTopologyManager.class,
@@ -161,7 +172,8 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       InvocationMatcher localRebalanceMatcher = matchMethodCall("handleRebalance").build();
       advanceOnGlobalComponentMethod(sequencer, manager(2), LocalTopologyManager.class,
             localRebalanceMatcher).before("rebalance:before_get_tx").after("rebalance:after_get_tx");
-      consistentHashFactory.setOwnerIndexes(2, 1);
+      int[] ownerIndexes = newPrimaryWasBackup ? new int[]{1, 2} : new int[]{2, 1};
+      consistentHashFactory.setOwnerIndexes(ownerIndexes);
       consistentHashFactory.triggerRebalance(cache(0));
    }
 
@@ -175,22 +187,29 @@ public class PessimisticStateTransferLocksTest extends MultipleCacheManagersTest
       tm(0).commit();
    }
 
-   private void checkLocksBeforeCommit(boolean backupLockOnCache1) throws Exception {
+   private void checkLocksBeforeCommit(boolean newPrimaryWasBackup, boolean backupLock) throws Exception {
+      int oldPrimaryIndex = 0;
+      int newPrimaryIndex = newPrimaryWasBackup ? 1 : 2;
+      int newBackupIndex = newPrimaryWasBackup ? 2 : 1;
+
       sequencer.enter("tx:check_locks");
-      assertFalse(getTransactionTable(cache(0)).getLocalTransactions().isEmpty());
-      assertTrue(getTransactionTable(cache(0)).getRemoteTransactions().isEmpty());
-      LocalTransaction localTx = getTransactionTable(cache(0)).getLocalTransactions().iterator().next();
+      assertFalse(getTransactionTable(cache(oldPrimaryIndex)).getLocalTransactions().isEmpty());
+      assertTrue(getTransactionTable(cache(oldPrimaryIndex)).getRemoteTransactions().isEmpty());
+      LocalTransaction localTx = getTransactionTable(cache(oldPrimaryIndex)).getLocalTransactions().iterator().next();
       assertEquals(Collections.singleton(KEY), localTx.getLockedKeys());
       assertEquals(Collections.emptySet(), localTx.getBackupLockedKeys());
 
-      assertTrue(getTransactionTable(cache(1)).getLocalTransactions().isEmpty());
-      assertEquals(backupLockOnCache1, !getTransactionTable(cache(1)).getRemoteTransactions().isEmpty());
-
-      assertTrue(getTransactionTable(cache(2)).getLocalTransactions().isEmpty());
-      assertFalse(getTransactionTable(cache(2)).getRemoteTransactions().isEmpty());
-      RemoteTransaction remoteTx = getTransactionTable(cache(2)).getRemoteTransactions().iterator().next();
+      assertTrue(getTransactionTable(cache(newPrimaryIndex)).getLocalTransactions().isEmpty());
+      assertFalse(getTransactionTable(cache(newPrimaryIndex)).getRemoteTransactions().isEmpty());
+      RemoteTransaction remoteTx = getTransactionTable(cache(newPrimaryIndex)).getRemoteTransactions().iterator().next();
       assertEquals(Collections.emptySet(), remoteTx.getLockedKeys());
       assertEquals(Collections.singleton(KEY), remoteTx.getBackupLockedKeys());
+
+      assertTrue(getTransactionTable(cache(newBackupIndex)).getLocalTransactions().isEmpty());
+      assertEquals(backupLock, !getTransactionTable(cache(newBackupIndex)).getRemoteTransactions().isEmpty());
+
+      //TODO Try another transaction with a write here and expect a timeout?
+
       sequencer.exit("tx:check_locks");
    }
 
