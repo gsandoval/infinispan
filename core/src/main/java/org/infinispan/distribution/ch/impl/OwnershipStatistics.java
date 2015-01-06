@@ -1,12 +1,12 @@
 package org.infinispan.distribution.ch.impl;
 
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.remoting.transport.Address;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.remoting.transport.Address;
 
 /**
  * This class holds statistics about a consistent hash. It counts how many segments are owned or primary-owned by each
@@ -60,11 +60,26 @@ public class OwnershipStatistics {
       return primaryOwned[i];
    }
 
+   public int getPrimaryOwned(int index) {
+      return primaryOwned[index];
+   }
+
    public int getOwned(Address a) {
       Integer i = nodes.get(a);
       if (i == null)
          return 0;
       return owned[i];
+   }
+
+   public int getOwned(int index) {
+      return owned[index];
+   }
+
+   public int getIndex(Address a) {
+      Integer i = nodes.get(a);
+      if (i == null)
+         throw new IllegalArgumentException("Only applicable for members");
+      return i;
    }
 
    public void incPrimaryOwned(Address a) {
@@ -116,7 +131,141 @@ public class OwnershipStatistics {
          }
          Address node = e.getKey();
          Integer index = e.getValue();
-         sb.append(node).append(": ").append(primaryOwned[index]).append('/').append(owned[index]);
+         sb.append(node).append(": ").append(primaryOwned[index]).append('+').append(owned[index] - primaryOwned[index]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+         );
          isFirst = false;
       }
       return sb.toString();
