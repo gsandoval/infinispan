@@ -42,6 +42,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
    public static final String CACHE_NAME = "testCache";
    private static final String OTHER_CACHE_NAME = "other_cache";
    private ConfigurationBuilder defaultConfig;
+   DISCARD[] discards;
    Cache c1, c2, c3;
    DISCARD d1, d2, d3;
 
@@ -59,6 +60,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       d2.setExcludeItself(true);
       d3 = TestingUtil.getDiscardForCache(c3);
       d3.setExcludeItself(true);
+      discards = new DISCARD[]{d1, d2, d3};
    }
 
    public void testNodeAbruptLeave() throws Exception {
@@ -219,6 +221,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       log.debugf("The merge coordinator will be %s", mergeCoordAddress);
       EmbeddedCacheManager mergeCoordManager = manager(mergeCoordAddress);
       int mergeCoordIndex = cacheManagers.indexOf(mergeCoordManager);
+      List<Address> membersWithoutMergeCoordinator = members.subList(1, members.size());
 
       // create the partitions
       log.debugf("Splitting the cluster in three");
@@ -235,9 +238,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       TestingUtil.waitForRehashToComplete(c3);
 
       // Disable DISCARD *only* on the merge coordinator
-      if (mergeCoordIndex == 0) d1.setDiscardAll(false);
-      if (mergeCoordIndex == 1) d2.setDiscardAll(false);
-      if (mergeCoordIndex == 2) d3.setDiscardAll(false);
+      discards[mergeCoordIndex].setDiscardAll(false);
 
       int viewIdAfterSplit = mergeCoordManager.getTransport().getViewId();
       final CheckPoint checkpoint = new CheckPoint();
@@ -257,6 +258,13 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
 
       log.debugf("Waiting for the REBALANCE_START command to reach the merge coordinator");
       checkpoint.awaitStrict("rebalance_" + Arrays.asList(mergeCoordAddress, cm4.getAddress()), 10, TimeUnit.SECONDS);
+
+      // Disable DISCARD on every node but the merge coordinator
+      d1.setDiscardAll(mergeCoordIndex == 0);
+      d2.setDiscardAll(mergeCoordIndex == 1);
+      d3.setDiscardAll(mergeCoordIndex == 2);
+      Thread.sleep(5000);
+      log.debugf("Only %s should be merged now", membersWithoutMergeCoordinator);
 
       // merge the partitions
       log.debugf("Merging the cluster partitions");
@@ -333,7 +341,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
          @Override
          public Object answer(InvocationOnMock invocation) throws Throwable {
             CacheTopology topology = (CacheTopology) invocation.getArguments()[1];
-            if (topology.getRebalanceId() == initialTopology.getRebalanceId() + 1) {
+            if (topology.getMembers().contains(manager(2))) {
                log.debugf("Discarding CH update command %s", topology);
                return null;
             }
@@ -345,7 +353,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
          @Override
          public Object answer(InvocationOnMock invocation) throws Throwable {
             CacheTopology topology = (CacheTopology) invocation.getArguments()[1];
-            if (topology.getRebalanceId() == initialTopology.getRebalanceId() + 2) {
+            if (topology.getMembers().contains(manager(2))) {
                log.debugf("Discarding rebalance command %s", topology);
                return null;
             }
@@ -365,10 +373,11 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
       checkpoint.awaitStrict("GET_STATUS_" + viewId, 10, TimeUnit.SECONDS);
       d3.setDiscardAll(true);
       manager(2).stop();
+
+      // Wait for node 2 to install a view with only itself and unblock the GET_STATUS command
       TestingUtil.blockUntilViewsReceived(30000, false, manager(1));
       checkpoint.triggerForever("3 left");
 
-      // Wait for node 2 to install a view with only itself and unblock the GET_STATUS command
       TestingUtil.waitForRehashToComplete(c2);
    }
 
@@ -405,7 +414,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
          @Override
          public Object answer(InvocationOnMock invocation) throws Throwable {
             CacheTopology topology = (CacheTopology) invocation.getArguments()[1];
-            if (topology.getRebalanceId() == initialTopology.getRebalanceId() + 1) {
+            if (topology.getMembers().contains(manager(2))) {
                log.debugf("Discarding CH update command %s", topology);
                return null;
             }
@@ -417,7 +426,7 @@ public class ClusterTopologyManagerTest extends MultipleCacheManagersTest {
          @Override
          public Object answer(InvocationOnMock invocation) throws Throwable {
             CacheTopology topology = (CacheTopology) invocation.getArguments()[1];
-            if (topology.getRebalanceId() == initialTopology.getRebalanceId() + 2) {
+            if (topology.getMembers().contains(manager(2))) {
                log.debugf("Discarding rebalance command %s", topology);
                return null;
             }
